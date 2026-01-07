@@ -11,25 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    ChatWorkspace: typeof import('./components/chat/ChatWorkspace.vue')['default']
-    ConversationList: typeof import('./components/chat/ConversationList.vue')['default']
-    ElButton: typeof import('element-plus/es')['ElButton']
-    ElCard: typeof import('element-plus/es')['ElCard']
-    ElCollapse: typeof import('element-plus/es')['ElCollapse']
-    ElCollapseItem: typeof import('element-plus/es')['ElCollapseItem']
-    ElDivider: typeof import('element-plus/es')['ElDivider']
-    ElIcon: typeof import('element-plus/es')['ElIcon']
-    ElInput: typeof import('element-plus/es')['ElInput']
-    ElTag: typeof import('element-plus/es')['ElTag']
-    ElText: typeof import('element-plus/es')['ElText']
-    HelloWorld: typeof import('./components/HelloWorld.vue')['default']
-    MarkdownRenderer: typeof import('./components/MarkdownRenderer.vue')['default']
-    NormalMessage: typeof import('./components/chat/NormalMessage.vue')['default']
-    PreviewPanel: typeof import('./components/chat/PreviewPanel.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    ThinkingMessage: typeof import('./components/chat/ThinkingMessage.vue')['default']
-    ToolCallMessage: typeof import('./components/chat/ToolCallMessage.vue')['default']
-    ToolMessage: typeof import('./components/chat/ToolMessage.vue')['default']
   }
 }

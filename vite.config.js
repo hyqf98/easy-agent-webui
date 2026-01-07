@@ -17,6 +17,15 @@ export default defineConfig({
     Components({
       resolvers: [ElementPlusResolver()],
       dts: 'src/components.d.ts',
+      deep: false,
+      extensions: ['vue'],
+      include: [/\.vue$/],
+      exclude: [
+        /[\\/]node_modules[\\/]/,
+        /[\\/]\.git[\\/]/,
+        /[\\/]\.nuxt[\\/]/,
+        /[\\/](ThinkingMessage|ToolMessage|NormalMessage)[\\/]/ // Exclude subdirectories we just created
+      ],
     }),
   ],
   resolve: {

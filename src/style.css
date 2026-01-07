@@ -13,7 +13,7 @@
   --ink-重: #4a4a4a;
 
   /* 淡墨 - 浅灰，用于次要信息 */
-  --ink-淡: #8a8a8a;
+  --ink-淡: #6b6b6b;
 
   /* 清墨 - 极浅，用于背景、边框 */
   --ink-清: #d8d8d8;
@@ -92,7 +92,7 @@ body {
 
 body {
   font-family: var(--font-宋);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.8;
   color: var(--ink-浓);
   background: var(--paper-新);

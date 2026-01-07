@@ -4,7 +4,7 @@ const routes = [
   {
     path: '/',
     name: 'chat',
-    component: () => import('../views/AiChatView.vue')
+    component: () => import('../views/chat/index.vue')
   }
 ]
 
