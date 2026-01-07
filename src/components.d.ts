@@ -11,6 +11,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ChatWorkspace: typeof import('./components/chat/ChatWorkspace.vue')['default']
+    ConversationList: typeof import('./components/chat/ConversationList.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCollapse: typeof import('element-plus/es')['ElCollapse']
@@ -22,7 +24,12 @@ declare module 'vue' {
     ElText: typeof import('element-plus/es')['ElText']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     MarkdownRenderer: typeof import('./components/MarkdownRenderer.vue')['default']
+    NormalMessage: typeof import('./components/chat/NormalMessage.vue')['default']
+    PreviewPanel: typeof import('./components/chat/PreviewPanel.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ThinkingMessage: typeof import('./components/chat/ThinkingMessage.vue')['default']
+    ToolCallMessage: typeof import('./components/chat/ToolCallMessage.vue')['default']
+    ToolMessage: typeof import('./components/chat/ToolMessage.vue')['default']
   }
 }

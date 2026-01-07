@@ -1,12 +1,11 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeNew from '@/views/HomeNew.vue'
+import {createRouter, createWebHistory} from 'vue-router'
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: HomeNew,
-  },
+    name: 'chat',
+    component: () => import('../views/AiChatView.vue')
+  }
 ]
 
 const router = createRouter({

@@ -1,0 +1,368 @@
+<template>
+  <div class="normal-message">
+    <div class="message-bubble" :class="{ 'streaming': isStreaming }">
+      <div class="bubble-decoration"></div>
+      <div class="markdown-content" v-html="renderedContent"></div>
+
+      <!-- 流式输入时的光标效果 -->
+      <span v-if="isStreaming" class="streaming-cursor"></span>
+
+      <!-- 墨滴装饰 -->
+      <div class="ink-drip-decoration">
+        <div class="drip-point"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import {computed} from 'vue'
+import {marked} from 'marked'
+import hljs from 'highlight.js'
+
+const props = defineProps({
+  content: {
+    type: String,
+    default: ''
+  },
+  isStreaming: {
+    type: Boolean,
+    default: false
+  }
+})
+
+// 配置 marked
+marked.setOptions({
+  highlight: function(code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(code, { language: lang }).value
+      } catch (err) {}
+    }
+    return hljs.highlightAuto(code).value
+  },
+  breaks: true,
+  gfm: true
+})
+
+// 渲染 Markdown 内容
+const renderedContent = computed(() => {
+  if (!props.content) return ''
+
+  let html = marked(props.content)
+
+  // 添加古风样式类
+  html = html
+    .replace(/<h1>/g, '<h1 class="ink-h1">')
+    .replace(/<h2>/g, '<h2 class="ink-h2">')
+    .replace(/<h3>/g, '<h3 class="ink-h3">')
+    .replace(/<p>/g, '<p class="ink-p">')
+    .replace(/<ul>/g, '<ul class="ink-ul">')
+    .replace(/<ol>/g, '<ol class="ink-ol">')
+    .replace(/<li>/g, '<li class="ink-li">')
+    .replace(/<blockquote>/g, '<blockquote class="ink-blockquote">')
+    .replace(/<code>/g, '<code class="ink-code">')
+    .replace(/<pre>/g, '<div class="ink-pre-wrapper"><pre class="ink-pre">')
+    .replace(/<\/pre>/g, '</pre></div>')
+    .replace(/<a /g, '<a class="ink-link" ')
+    .replace(/<strong>/g, '<strong class="ink-strong">')
+    .replace(/<em>/g, '<em class="ink-em">')
+
+  return html
+})
+</script>
+
+<style scoped>
+.normal-message {
+  position: relative;
+}
+
+.message-bubble {
+  position: relative;
+  padding: 2px var(--spacing-紧);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: var(--shadow-墨-中);
+  border: var(--border-细);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  clip-path: polygon(0 0, 100% 0, 100% 92%, 92% 100%, 0 100%);
+}
+
+.message-bubble.streaming {
+  animation: streamingPulse 2s ease-in-out infinite;
+}
+
+@keyframes streamingPulse {
+  0%, 100% {
+    box-shadow: var(--shadow-墨-中);
+  }
+  50% {
+    box-shadow: var(--shadow-墨-深);
+  }
+}
+
+/* 气泡装饰 */
+.bubble-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg,
+    transparent 45%,
+    rgba(0, 0, 0, 0.02) 50%,
+    transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Markdown 内容样式 */
+.markdown-content {
+  position: relative;
+  z-index: 1;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--ink-焦);
+}
+
+/* 标题样式 */
+.markdown-content :deep(.ink-h1) {
+  font-size: 22px;
+  font-weight: bold;
+  margin: var(--spacing-宽) 0 12px;
+  padding-bottom: var(--spacing-中);
+  border-bottom: 2px solid var(--ink-焦);
+  color: var(--ink-焦);
+  font-family: var(--font-宋);
+  letter-spacing: 3px;
+}
+
+.markdown-content :deep(.ink-h2) {
+  font-size: 19px;
+  font-weight: bold;
+  margin: 14px 0 10px;
+  color: var(--ink-焦);
+  font-family: var(--font-宋);
+  letter-spacing: 2px;
+}
+
+.markdown-content :deep(.ink-h3) {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 12px 0 var(--spacing-紧);
+  color: var(--ink-重);
+}
+
+/* 段落样式 */
+.markdown-content :deep(.ink-p) {
+  margin: 10px 0;
+  text-align: justify;
+}
+
+/* 列表样式 */
+.markdown-content :deep(.ink-ul),
+.markdown-content :deep(.ink-ol) {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.markdown-content :deep(.ink-li) {
+  margin: 6px 0;
+  position: relative;
+}
+
+.markdown-content :deep(.ink-ul .ink-li)::before {
+  content: '◆';
+  position: absolute;
+  left: -20px;
+  color: var(--ink-焦);
+  font-size: 10px;
+  top: 4px;
+}
+
+.markdown-content :deep(.ink-ol) {
+  counter-reset: ink-counter;
+}
+
+.markdown-content :deep(.ink-ol .ink-li)::before {
+  counter-increment: ink-counter;
+  content: counter(ink-counter) '.';
+  position: absolute;
+  left: -24px;
+  color: var(--ink-重);
+  font-weight: 500;
+}
+
+/* 引用样式 */
+.markdown-content :deep(.ink-blockquote) {
+  margin: var(--spacing-宽) 0;
+  padding: 12px 20px;
+  border-left: 3px solid var(--ink-焦);
+  background: var(--ink-晕染-浅);
+  font-style: italic;
+  color: var(--ink-重);
+}
+
+.markdown-content :deep(.ink-blockquote p) {
+  margin: 0;
+}
+
+/* 代码样式 */
+.markdown-content :deep(.ink-code) {
+  padding: 2px var(--spacing-中);
+  background: var(--ink-晕染-浅);
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--ink-重);
+}
+
+.markdown-content :deep(.ink-pre-wrapper) {
+  margin: var(--spacing-宽) 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-墨-浅);
+}
+
+.markdown-content :deep(.ink-pre) {
+  margin: 0;
+  padding: var(--spacing-宽);
+  background: var(--ink-焦);
+  color: var(--paper-新);
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+.markdown-content :deep(.ink-pre code) {
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+
+/* 代码高亮样式 */
+.markdown-content :deep(.hljs) {
+  background: var(--ink-焦);
+}
+
+.markdown-content :deep(.hljs-comment),
+.markdown-content :deep(.hljs-quote) {
+  color: var(--ink-清);
+  font-style: italic;
+}
+
+.markdown-content :deep(.hljs-keyword),
+.markdown-content :deep(.hljs-selector-tag),
+.markdown-content :deep(.hljs-literal) {
+  color: var(--seal-朱砂);
+}
+
+.markdown-content :deep(.hljs-string),
+.markdown-content :deep(.hljs-doctag) {
+  color: var(--ink-清);
+}
+
+.markdown-content :deep(.hljs-number) {
+  color: #888;
+}
+
+.markdown-content :deep(.hljs-function) {
+  color: #ccc;
+}
+
+/* 链接样式 */
+.markdown-content :deep(.ink-link) {
+  color: var(--ink-焦);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ink-焦);
+  transition: all 0.2s ease;
+}
+
+.markdown-content :deep(.ink-link:hover) {
+  background: var(--ink-晕染-中);
+}
+
+/* 强调样式 */
+.markdown-content :deep(.ink-strong) {
+  color: var(--ink-焦);
+  font-weight: 600;
+}
+
+.markdown-content :deep(.ink-em) {
+  color: var(--ink-重);
+  font-style: italic;
+}
+
+/* 表格样式 */
+.markdown-content :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--spacing-宽) 0;
+  font-size: 14px;
+}
+
+.markdown-content :deep(th) {
+  padding: 10px 12px;
+  background: var(--ink-焦);
+  color: var(--paper-新);
+  border: 1px solid rgba(26, 26, 26, 0.15);
+  font-weight: 600;
+  text-align: left;
+}
+
+.markdown-content :deep(td) {
+  padding: 10px 12px;
+  border: 1px solid rgba(26, 26, 26, 0.1);
+}
+
+.markdown-content :deep(tr:nth-child(even)) {
+  background: var(--ink-晕染-浅);
+}
+
+/* 流式光标 */
+.streaming-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 18px;
+  background: var(--ink-焦);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: cursorBlink 1s step-end infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* 墨滴装饰 */
+.ink-drip-decoration {
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  width: 70%;
+  height: 15px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.drip-point {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center,
+    rgba(0, 0, 0, 0.06) 0%,
+    transparent 70%);
+  filter: blur(3px);
+  animation: dripPulse 3s ease-in-out infinite;
+}
+
+@keyframes dripPulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+</style>
