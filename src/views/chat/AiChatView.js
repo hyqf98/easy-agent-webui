@@ -51,27 +51,31 @@ const chatModes = [
   {
     id: 'chat',
     label: '智能问答',
+    description: '深度理解，智能对话',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
     enabled: true,
     visible: true
   },
   {
     id: 'markdown',
-    label: 'Markdown',
+    label: 'Markdown格式',
+    description: 'AI会完成你的任务并以Markdown方式输出结论',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>',
     enabled: true,
     visible: true
   },
   {
     id: 'web',
-    label: '网页',
+    label: '网页模式',
+    description: 'AI会完成你的任务并以网页方式输出结论',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
     enabled: true,
     visible: true
   },
   {
     id: 'ppt',
-    label: 'PPT',
+    label: 'PPT格式',
+    description: 'AI会完成你的任务并以PPT方式输出结论',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
     enabled: true,
     visible: true
@@ -99,6 +103,12 @@ const currentModeLabel = computed(() => {
   const mode = chatModes.find(m => m.id === currentChatMode.value)
   return mode ? mode.label : ''
 })
+
+// 获取当前聊天模式的说明
+const getModeDescription = (modeId) => {
+  const mode = chatModes.find(m => m.id === modeId)
+  return mode ? mode.description : ''
+}
 
 let messageIdCounter = 0
 let conversationIdCounter = 0
@@ -681,6 +691,7 @@ export {
   enabledFeatures,
   currentChatMode,
   currentModeLabel,
+  getModeDescription,
   isFeatureEnabled,
   isModeActive,
   toggleFeature,

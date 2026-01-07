@@ -301,6 +301,7 @@ import {
   enabledFeatures,
   currentChatMode,
   currentModeLabel,
+  getModeDescription,
   isFeatureEnabled,
   isModeActive,
   toggleFeature,
