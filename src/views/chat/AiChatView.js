@@ -121,6 +121,11 @@ const createConversationId = () => `conv_${++conversationIdCounter}`
 // 是否有活跃会话
 const hasActiveChat = computed(() => !!activeConversationId.value)
 
+// 是否应该将输入框显示在底部（有消息时）
+const shouldShowInputAtBottom = computed(() => {
+  return hasActiveChat.value && messages.value.length > 0
+})
+
 // 当前标题
 const currentTitle = computed(() => {
   if (!activeConversationId.value) return '灵犀问答'
@@ -146,6 +151,8 @@ const createConversation = () => {
     updatedAt: Date.now()
   }
   conversations.value.unshift(newConv)
+  // 重置模式为智能问答
+  currentChatMode.value = 'chat'
   selectConversation(newConv.id)
 }
 
@@ -539,6 +546,24 @@ const isModeActive = (modeId) => {
   return currentChatMode.value === modeId
 }
 
+// 判断是否使用分栏布局（markdown、网页模式、PPT格式 + 已有消息）
+const isSplitLayoutMode = computed(() => {
+  // 只有在已有消息且模式为分栏模式时才使用分栏布局
+  return messages.value.length > 0 && ['markdown', 'web', 'ppt'].includes(currentChatMode.value)
+})
+
+// 获取最后一条 AI 消息的内容（用于分栏布局右侧渲染）
+const lastAiContent = computed(() => {
+  const aiMessages = messages.value.filter(m => m.role === 'assistant' && m.content)
+  return aiMessages.length > 0 ? aiMessages[aiMessages.length - 1].content : ''
+})
+
+// 获取最后一条 AI 消息对象（用于分栏布局右侧渲染）
+const lastAiMessage = computed(() => {
+  const aiMessages = messages.value.filter(m => m.role === 'assistant' && m.content)
+  return aiMessages.length > 0 ? aiMessages[aiMessages.length - 1] : null
+})
+
 // 处理附件上传
 const handleAttachment = () => {
   // 创建一个隐藏的文件输入框
@@ -694,6 +719,10 @@ export {
   getModeDescription,
   isFeatureEnabled,
   isModeActive,
+  isSplitLayoutMode,
+  lastAiContent,
+  lastAiMessage,
+  shouldShowInputAtBottom,
   toggleFeature,
   switchChatMode,
   hasActiveChat,

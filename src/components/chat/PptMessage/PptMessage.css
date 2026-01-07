@@ -1,0 +1,228 @@
+.ppt-message {
+  width: 100%;
+  height: 100%;
+}
+
+.ppt-content-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-宽);
+}
+
+.ppt-slide {
+  width: 100%;
+  height: 100%;
+  max-width: 1200px;
+  background: linear-gradient(135deg,
+    var(--paper-新) 0%,
+    var(--paper-熟) 100%);
+  border-radius: 12px;
+  box-shadow: var(--shadow-墨-深);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.ppt-slide.streaming {
+  animation: pptPulse 2s ease-in-out infinite;
+}
+
+@keyframes pptPulse {
+  0%, 100% {
+    box-shadow: var(--shadow-墨-深);
+  }
+  50% {
+    box-shadow: 0 12px 48px rgba(26, 26, 26, 0.18);
+  }
+}
+
+.ppt-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 48px;
+}
+
+/* PPT 顶部装饰 */
+.ppt-decoration-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg,
+    var(--seal-朱砂) 0%,
+    var(--accent-赭石) 50%,
+    var(--seal-朱砂) 100%);
+}
+
+/* PPT 底部装饰 */
+.ppt-decoration-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--ink-清) 50%,
+    transparent 100%);
+}
+
+/* PPT 内容区域 */
+.ppt-content {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-淡) transparent;
+}
+
+.ppt-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ppt-content::-webkit-scrollbar-thumb {
+  background: var(--ink-淡);
+  border-radius: 3px;
+}
+
+/* PPT 标题样式 */
+.ppt-content :deep(.ppt-h1) {
+  font-size: 42px;
+  font-weight: 700;
+  margin: 0 0 32px;
+  padding-bottom: 20px;
+  border-bottom: 3px solid var(--seal-朱砂);
+  color: var(--ink-焦);
+  font-family: var(--font-宋);
+  letter-spacing: 6px;
+  text-align: center;
+}
+
+.ppt-content :deep(.ppt-h2) {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 28px 0 20px;
+  color: var(--ink-焦);
+  font-family: var(--font-宋);
+  letter-spacing: 4px;
+  text-align: center;
+}
+
+.ppt-content :deep(.ppt-h3) {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 20px 0 16px;
+  color: var(--ink-重);
+  font-family: var(--font-宋);
+  letter-spacing: 2px;
+}
+
+/* PPT 段落样式 */
+.ppt-content :deep(.ppt-p) {
+  margin: 16px 0;
+  text-align: justify;
+  font-size: 20px;
+  line-height: 1.8;
+}
+
+/* PPT 列表样式 */
+.ppt-content :deep(.ppt-ul),
+.ppt-content :deep(.ppt-ol) {
+  margin: 20px 0;
+  padding-left: 48px;
+}
+
+.ppt-content :deep(.ppt-li) {
+  margin: 12px 0;
+  font-size: 20px;
+  position: relative;
+}
+
+.ppt-content :deep(.ppt-ul .ppt-li)::before {
+  content: '◆';
+  position: absolute;
+  left: -32px;
+  color: var(--seal-朱砂);
+  font-size: 16px;
+  top: 2px;
+}
+
+.ppt-content :deep(.ppt-ol) {
+  counter-reset: ppt-counter;
+}
+
+.ppt-content :deep(.ppt-ol .ppt-li)::before {
+  counter-increment: ppt-counter;
+  content: counter(ppt-counter);
+  position: absolute;
+  left: -36px;
+  color: var(--seal-朱砂);
+  font-weight: 600;
+  font-size: 18px;
+  top: 0;
+}
+
+/* PPT 强调样式 */
+.ppt-content :deep(.ppt-strong) {
+  color: var(--seal-朱砂);
+  font-weight: 700;
+}
+
+.ppt-content :deep(.ppt-em) {
+  color: var(--accent-赭石);
+  font-style: italic;
+}
+
+/* PPT 代码样式 */
+.ppt-content :deep(code) {
+  padding: 4px 12px;
+  background: var(--ink-晕染-中);
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  color: var(--seal-朱砂);
+  border-radius: 4px;
+}
+
+/* PPT 引用样式 */
+.ppt-content :deep(blockquote) {
+  margin: 24px 0;
+  padding: 20px 32px;
+  border-left: 4px solid var(--seal-朱砂);
+  background: var(--ink-晕染-浅);
+  font-style: italic;
+  color: var(--ink-重);
+  font-size: 18px;
+}
+
+/* PPT 表格样式 */
+.ppt-content :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 18px;
+}
+
+.ppt-content :deep(th) {
+  padding: 16px 20px;
+  background: var(--seal-朱砂);
+  color: var(--paper-新);
+  border: 1px solid rgba(200, 48, 48, 0.2);
+  font-weight: 600;
+  text-align: center;
+}
+
+.ppt-content :deep(td) {
+  padding: 14px 20px;
+  border: 1px solid var(--ink-清);
+  text-align: center;
+}
+
+.ppt-content :deep(tr:nth-child(even)) {
+  background: var(--ink-晕染-浅);
+}

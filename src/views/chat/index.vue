@@ -66,7 +66,7 @@
 
           <!-- 消息区域 -->
           <Transition name="messages-appear">
-            <div v-if="hasActiveChat" class="messages-container" ref="messagesContainer">
+            <div v-if="hasActiveChat" class="messages-container" :class="{ 'split-layout': isSplitLayoutMode }" ref="messagesContainer">
               <div class="messages-inner">
                 <!-- 欢迎消息 -->
                 <div v-if="messages.length === 0" class="empty-conversation">
@@ -74,8 +74,209 @@
                   <p>开始这段对话...</p>
                 </div>
 
-                <!-- 消息列表 -->
-                <TransitionGroup name="message-appear" tag="div" class="messages-list">
+                <!-- 分栏布局：左侧聊天面板 + 右侧渲染面板 -->
+                <div v-else-if="isSplitLayoutMode" class="split-layout-wrapper">
+                  <!-- 左侧：聊天面板（思考、工具调用 + 输入框） -->
+                  <div class="split-left-panel">
+                    <!-- 消息列表区域 -->
+                    <div class="left-messages-area">
+                      <TransitionGroup name="message-appear" tag="div" class="left-messages-list">
+                        <div v-for="(message, index) in messages" :key="message.id" class="message-wrapper">
+                          <!-- 用户消息 -->
+                          <div v-if="message.role === 'user'" class="message-user">
+                            <div class="user-message-bubble">
+                              <div class="message-content">{{ message.content }}</div>
+                              <div class="ink-drip"></div>
+                            </div>
+                            <div class="user-avatar">
+                              <div class="avatar-seal">客</div>
+                            </div>
+                          </div>
+
+                          <!-- AI 消息 - 只显示思考和工具调用 -->
+                          <div v-else class="message-ai">
+                            <div class="ai-avatar">
+                              <div class="avatar-ink">墨</div>
+                            </div>
+                            <div class="ai-message-group">
+                              <!-- 思考内容 -->
+                              <ThinkingMessage
+                                v-if="message.thinking"
+                                :content="message.thinking"
+                                :isExpanded="expandedThinking === message.id"
+                                @toggle="toggleThinking(message.id)"
+                              />
+
+                              <!-- 工具调用 -->
+                              <ToolMessage
+                                v-for="tool in message.tools"
+                                :key="tool.id"
+                                :tool="tool"
+                              />
+
+                              <!-- 普通内容提示（左侧只显示提示） -->
+                              <div v-if="message.content" class="content-hint">
+                                <span class="hint-text">已生成内容，请查看右侧预览</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </TransitionGroup>
+
+                      <!-- 加载中动画 -->
+                      <div v-if="isThinking" class="thinking-indicator">
+                        <div class="ink-ripples">
+                          <div class="ripple ripple-1"></div>
+                          <div class="ripple ripple-2"></div>
+                          <div class="ripple ripple-3"></div>
+                        </div>
+                        <span class="thinking-text">正在思考...</span>
+                      </div>
+                    </div>
+
+                    <!-- 输入区域（在左侧面板底部） -->
+                    <div class="left-input-area">
+                      <div class="input-container-compact">
+                        <!-- 输入框包装器 -->
+                        <div class="input-wrapper-ink-compact">
+                          <div class="input-inner-wrapper-compact">
+                            <!-- 文本输入区域 -->
+                            <div class="textarea-wrapper-compact">
+                              <textarea
+                                v-model="inputMessage"
+                                @input="handleInput"
+                                @keydown.enter.exact.prevent="sendMessage"
+                                class="message-input-compact"
+                                :placeholder="inputPlaceholder"
+                                rows="1"
+                                ref="inputRef"
+                              ></textarea>
+                            </div>
+
+                            <!-- 发送按钮 -->
+                            <button
+                              @click="sendMessage"
+                              class="send-btn-compact"
+                              :disabled="!inputMessage.trim() || isSending"
+                              :class="{ 'sending': isSending }"
+                            >
+                              <div class="send-seal-compact">
+                                <svg class="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M22 2L11 13"/>
+                                  <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+                                </svg>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- 底部工具栏 -->
+                        <div class="input-toolbar-compact">
+                          <!-- 左侧功能按钮组 -->
+                          <div class="toolbar-left-compact">
+                            <!-- +号按钮（附件） -->
+                            <button class="tool-btn-compact attachment-btn" @click="handleAttachment" title="上传图片或文件">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                              </svg>
+                            </button>
+
+                            <!-- 可复选功能按钮 -->
+                            <div class="feature-buttons-compact">
+                              <button
+                                v-for="feature in visibleFeatureButtons"
+                                :key="feature.id"
+                                class="tool-btn-compact"
+                                :class="{ 'active': isFeatureEnabled(feature.id) }"
+                                @click="toggleFeature(feature.id)"
+                                :title="feature.label"
+                              >
+                                <!-- 深度思考图标 -->
+                                <svg v-if="feature.id === 'deepThink'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <circle cx="12" cy="12" r="3"/>
+                                  <path d="M12 1v6m0 6v6"/>
+                                  <path d="M1 12h6m6 0h6"/>
+                                </svg>
+                                <!-- 搜索图标 -->
+                                <svg v-else-if="feature.id === 'search'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <circle cx="11" cy="11" r="8"/>
+                                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                                <span>{{ feature.label }}</span>
+                              </button>
+                            </div>
+
+                            <!-- 当前模式显示（只读） -->
+                            <div class="current-mode-display-compact">
+                              <span class="mode-icon-compact">
+                                <!-- 智能问答图标 -->
+                                <svg v-if="currentChatMode === 'chat'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                <!-- Markdown 图标 -->
+                                <svg v-else-if="currentChatMode === 'markdown'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                  <path d="M8 12h8"/>
+                                  <path d="M12 8v8"/>
+                                </svg>
+                                <!-- 网页图标 -->
+                                <svg v-else-if="currentChatMode === 'web'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <circle cx="12" cy="12" r="10"/>
+                                  <line x1="2" y1="12" x2="22" y2="12"/>
+                                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                </svg>
+                                <!-- PPT 图标 -->
+                                <svg v-else-if="currentChatMode === 'ppt'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                  <line x1="8" y1="21" x2="16" y2="21"/>
+                                  <line x1="12" y1="17" x2="12" y2="21"/>
+                                </svg>
+                              </span>
+                              <span class="mode-name-compact">{{ currentModeLabel }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 右侧：渲染面板（普通内容按模式渲染） -->
+                  <div class="split-right-panel">
+                    <div class="right-content-wrapper">
+                      <!-- 渲染最后一条有内容的 AI 消息 -->
+                      <div v-if="lastAiMessage" class="render-content-area">
+                        <!-- Markdown 模式 -->
+                        <NormalMessage
+                          v-if="currentChatMode === 'markdown'"
+                          :content="lastAiMessage.content"
+                          :isStreaming="lastAiMessage.isStreaming"
+                        />
+                        <!-- 网页模式 -->
+                        <HtmlMessage
+                          v-else-if="currentChatMode === 'web'"
+                          :content="lastAiMessage.content"
+                          :isStreaming="lastAiMessage.isStreaming"
+                        />
+                        <!-- PPT 模式 -->
+                        <PptMessage
+                          v-else-if="currentChatMode === 'ppt'"
+                          :content="lastAiMessage.content"
+                          :isStreaming="lastAiMessage.isStreaming"
+                        />
+                      </div>
+
+                      <!-- 空状态 -->
+                      <div v-else class="render-empty-state">
+                        <div class="empty-icon">📄</div>
+                        <p>等待生成内容...</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 普通布局：完整消息列表 -->
+                <TransitionGroup v-else name="message-appear" tag="div" class="messages-list">
                   <div v-for="(message, index) in messages" :key="message.id" class="message-wrapper">
                     <!-- 用户消息 -->
                     <div v-if="message.role === 'user'" class="message-user">
@@ -120,8 +321,8 @@
                   </div>
                 </TransitionGroup>
 
-                <!-- 加载中动画 -->
-                <div v-if="isThinking" class="thinking-indicator">
+                <!-- 普通布局的加载中动画 -->
+                <div v-if="isThinking && !isSplitLayoutMode" class="thinking-indicator">
                   <div class="ink-ripples">
                     <div class="ripple ripple-1"></div>
                     <div class="ripple ripple-2"></div>
@@ -134,8 +335,8 @@
           </Transition>
         </div>
 
-        <!-- 输入区域 -->
-        <div class="input-area" :class="{ 'centered': !hasActiveChat, 'at-bottom': hasActiveChat }">
+        <!-- 输入区域（仅在普通布局下显示） -->
+        <div v-if="!isSplitLayoutMode" class="input-area" :class="{ 'centered': !shouldShowInputAtBottom, 'at-bottom': shouldShowInputAtBottom }">
           <!-- 滚动按钮 (动态显示) -->
           <Transition name="scroll-button-fade">
             <button
@@ -279,6 +480,8 @@ import ConversationList from '@/components/chat/index.vue'
 import ThinkingMessage from '@/components/chat/ThinkingMessage/index.vue'
 import NormalMessage from '@/components/chat/NormalMessage/index.vue'
 import ToolMessage from '@/components/chat/ToolMessage/index.vue'
+import HtmlMessage from '@/components/chat/HtmlMessage/index.vue'
+import PptMessage from '@/components/chat/PptMessage/index.vue'
 
 // 导入所有状态和函数
 import {
@@ -304,6 +507,10 @@ import {
   getModeDescription,
   isFeatureEnabled,
   isModeActive,
+  isSplitLayoutMode,
+  lastAiContent,
+  lastAiMessage,
+  shouldShowInputAtBottom,
   toggleFeature,
   switchChatMode,
   hasActiveChat,
