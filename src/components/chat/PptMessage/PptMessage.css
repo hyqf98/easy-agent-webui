@@ -15,11 +15,11 @@
 .ppt-slide {
   width: 100%;
   height: 100%;
-  max-width: 1200px;
+  max-width: clamp(800px, 90vw, 1200px);
   background: linear-gradient(135deg,
     var(--paper-新) 0%,
     var(--paper-熟) 100%);
-  border-radius: 12px;
+  border-radius: var(--rfs-space-xl);
   box-shadow: var(--shadow-墨-深);
   overflow: hidden;
   position: relative;
@@ -35,7 +35,7 @@
     box-shadow: var(--shadow-墨-深);
   }
   50% {
-    box-shadow: 0 12px 48px rgba(26, 26, 26, 0.18);
+    box-shadow: 0 var(--rfs-space-lg) var(--rfs-space-4xl) rgba(26, 26, 26, 0.18);
   }
 }
 
@@ -45,7 +45,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  padding: 48px;
+  padding: var(--rfs-space-4xl);
 }
 
 /* PPT 顶部装饰 */
@@ -54,7 +54,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 6px;
+  height: var(--rfs-space-md);
   background: linear-gradient(90deg,
     var(--seal-朱砂) 0%,
     var(--accent-赭石) 50%,
@@ -67,7 +67,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: var(--rfs-space-md);
   background: linear-gradient(90deg,
     transparent 0%,
     var(--ink-清) 50%,
@@ -83,74 +83,74 @@
 }
 
 .ppt-content::-webkit-scrollbar {
-  width: 6px;
+  width: var(--rfs-space-md);
 }
 
 .ppt-content::-webkit-scrollbar-thumb {
   background: var(--ink-淡);
-  border-radius: 3px;
+  border-radius: var(--rfs-space-xs);
 }
 
 /* PPT 标题样式 */
 .ppt-content :deep(.ppt-h1) {
-  font-size: 42px;
+  font-size: clamp(32px, 5vw, 42px);
   font-weight: 700;
-  margin: 0 0 32px;
-  padding-bottom: 20px;
-  border-bottom: 3px solid var(--seal-朱砂);
+  margin: 0 0 var(--rfs-space-4xl);
+  padding-bottom: var(--rfs-space-xl);
+  border-bottom: var(--rfs-border-md) solid var(--seal-朱砂);
   color: var(--ink-焦);
   font-family: var(--font-宋);
-  letter-spacing: 6px;
+  letter-spacing: var(--rfs-space-lg);
   text-align: center;
 }
 
 .ppt-content :deep(.ppt-h2) {
-  font-size: 32px;
+  font-size: clamp(24px, 4vw, 32px);
   font-weight: 600;
-  margin: 28px 0 20px;
+  margin: var(--rfs-space-3xl) 0 var(--rfs-space-xl);
   color: var(--ink-焦);
   font-family: var(--font-宋);
-  letter-spacing: 4px;
+  letter-spacing: var(--rfs-space-md);
   text-align: center;
 }
 
 .ppt-content :deep(.ppt-h3) {
-  font-size: 24px;
+  font-size: clamp(18px, 3vw, 24px);
   font-weight: 600;
-  margin: 20px 0 16px;
+  margin: var(--rfs-space-xl) 0 var(--rfs-space-lg);
   color: var(--ink-重);
   font-family: var(--font-宋);
-  letter-spacing: 2px;
+  letter-spacing: var(--rfs-space-md);
 }
 
 /* PPT 段落样式 */
 .ppt-content :deep(.ppt-p) {
-  margin: 16px 0;
+  margin: var(--rfs-space-xl) 0;
   text-align: justify;
-  font-size: 20px;
+  font-size: clamp(16px, 3vw, 20px);
   line-height: 1.8;
 }
 
 /* PPT 列表样式 */
 .ppt-content :deep(.ppt-ul),
 .ppt-content :deep(.ppt-ol) {
-  margin: 20px 0;
-  padding-left: 48px;
+  margin: var(--rfs-space-xl) 0;
+  padding-left: var(--rfs-space-4xl);
 }
 
 .ppt-content :deep(.ppt-li) {
-  margin: 12px 0;
-  font-size: 20px;
+  margin: var(--rfs-space-lg) 0;
+  font-size: clamp(16px, 3vw, 20px);
   position: relative;
 }
 
 .ppt-content :deep(.ppt-ul .ppt-li)::before {
   content: '◆';
   position: absolute;
-  left: -32px;
+  left: calc(-1 * var(--rfs-space-3xl));
   color: var(--seal-朱砂);
-  font-size: 16px;
-  top: 2px;
+  font-size: var(--rfs-font-base);
+  top: var(--rfs-space-xs);
 }
 
 .ppt-content :deep(.ppt-ol) {
@@ -161,10 +161,10 @@
   counter-increment: ppt-counter;
   content: counter(ppt-counter);
   position: absolute;
-  left: -36px;
+  left: calc(-1 * var(--rfs-space-4xl));
   color: var(--seal-朱砂);
   font-weight: 600;
-  font-size: 18px;
+  font-size: var(--rfs-font-lg);
   top: 0;
 }
 
@@ -181,45 +181,45 @@
 
 /* PPT 代码样式 */
 .ppt-content :deep(code) {
-  padding: 4px 12px;
+  padding: var(--rfs-space-xs) var(--rfs-space-lg);
   background: var(--ink-晕染-中);
   font-family: 'Courier New', monospace;
-  font-size: 16px;
+  font-size: var(--rfs-font-lg);
   color: var(--seal-朱砂);
-  border-radius: 4px;
+  border-radius: var(--rfs-space-xs);
 }
 
 /* PPT 引用样式 */
 .ppt-content :deep(blockquote) {
-  margin: 24px 0;
-  padding: 20px 32px;
-  border-left: 4px solid var(--seal-朱砂);
+  margin: var(--rfs-space-3xl) 0;
+  padding: var(--rfs-space-xl) var(--rfs-space-3xl);
+  border-left: var(--rfs-border-md) solid var(--seal-朱砂);
   background: var(--ink-晕染-浅);
   font-style: italic;
   color: var(--ink-重);
-  font-size: 18px;
+  font-size: var(--rfs-font-xl);
 }
 
 /* PPT 表格样式 */
 .ppt-content :deep(table) {
   width: 100%;
   border-collapse: collapse;
-  margin: 24px 0;
-  font-size: 18px;
+  margin: var(--rfs-space-3xl) 0;
+  font-size: var(--rfs-font-xl);
 }
 
 .ppt-content :deep(th) {
-  padding: 16px 20px;
+  padding: var(--rfs-space-lg) var(--rfs-space-xl);
   background: var(--seal-朱砂);
   color: var(--paper-新);
-  border: 1px solid rgba(200, 48, 48, 0.2);
+  border: var(--rfs-border-sm) solid rgba(200, 48, 48, 0.2);
   font-weight: 600;
   text-align: center;
 }
 
 .ppt-content :deep(td) {
-  padding: 14px 20px;
-  border: 1px solid var(--ink-清);
+  padding: var(--rfs-space-lg) var(--rfs-space-xl);
+  border: var(--rfs-border-sm) solid var(--ink-清);
   text-align: center;
 }
 

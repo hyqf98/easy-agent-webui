@@ -95,6 +95,11 @@ const visibleFeatureButtons = computed(() => {
 
 // 获取可见的聊天模式
 const visibleChatModes = computed(() => {
+  // 如果会话已有消息，只显示当前选中的模式（不允许中途切换）
+  if (messages.value.length > 0) {
+    return chatModes.filter(mode => mode.id === currentChatMode.value && mode.enabled)
+  }
+  // 如果会话没有消息，显示所有可用模式让用户选择
   return chatModes.filter(mode => mode.enabled && mode.visible)
 })
 
@@ -118,12 +123,13 @@ let eventSource = null
 const createId = () => `msg_${++messageIdCounter}`
 const createConversationId = () => `conv_${++conversationIdCounter}`
 
-// 是否有活跃会话
-const hasActiveChat = computed(() => !!activeConversationId.value)
+// 是否有活跃会话且有消息（用于判断是否显示消息区域）
+// 如果选中了会话但没有消息，仍然显示欢迎页面
+const hasActiveChat = computed(() => !!activeConversationId.value && messages.value.length > 0)
 
-// 是否应该将输入框显示在底部（有消息时）
+// 是否应该将输入框显示在底部（与 hasActiveChat 一致）
 const shouldShowInputAtBottom = computed(() => {
-  return hasActiveChat.value && messages.value.length > 0
+  return hasActiveChat.value
 })
 
 // 当前标题
@@ -140,20 +146,22 @@ const inputPlaceholder = computed(() => {
     : '输入消息开始新的对话...'
 })
 
-// 创建新会话
+// 创建新会话（点击按钮时只返回欢迎页面，不创建会话记录）
 const createConversation = () => {
-  const newConv = {
-    id: createConversationId(),
-    title: '新对话',
-    preview: '',
-    messages: [],
-    createdAt: Date.now(),
-    updatedAt: Date.now()
-  }
-  conversations.value.unshift(newConv)
+  // 清除当前选中会话，返回欢迎页面
+  activeConversationId.value = null
+  messages.value = []
+
   // 重置模式为智能问答
   currentChatMode.value = 'chat'
-  selectConversation(newConv.id)
+
+  // 清空所有功能按钮的选中状态（深度思考、搜索等）
+  enabledFeatures.value = []
+
+  // 聚焦输入框
+  nextTick(() => {
+    inputRef.value?.focus()
+  })
 }
 
 // 选择会话
@@ -188,6 +196,27 @@ const renameConversation = (id, newTitle) => {
     conv.title = newTitle
     conv.updatedAt = Date.now()
   }
+}
+
+// 清空当前会话
+const clearCurrentConversation = () => {
+  if (!activeConversationId.value) return
+  messages.value = []
+  const conv = conversations.value.find(c => c.id === activeConversationId.value)
+  if (conv) {
+    conv.messages = []
+    conv.updatedAt = Date.now()
+  }
+}
+
+// 停止生成
+const stopGeneration = () => {
+  if (eventSource) {
+    eventSource.close()
+    eventSource = null
+  }
+  isSending.value = false
+  isThinking.value = false
 }
 
 // 更新会话预览
@@ -233,9 +262,18 @@ const sendMessage = async () => {
   const content = inputMessage.value.trim()
   if (!content || isSending.value) return
 
-  // 如果没有活跃会话，创建新会话
+  // 如果没有活跃会话，先创建实际的会话对象
   if (!hasActiveChat.value) {
-    createConversation()
+    const newConv = {
+      id: createConversationId(),
+      title: '新对话',
+      preview: '',
+      messages: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    }
+    conversations.value.unshift(newConv)
+    activeConversationId.value = newConv.id
   }
 
   // 添加用户消息
@@ -630,15 +668,6 @@ const checkScrollPosition = () => {
   // 判断是否有可滚动内容（内容超出容器高度）
   const hasScrollableContent = scrollHeight > clientHeight + 10
 
-  console.log('滚动检测:', {
-    scrollTop,
-    scrollHeight,
-    clientHeight,
-    距顶部: distanceToTop,
-    距底部: distanceToBottom,
-    可滚动: hasScrollableContent
-  })
-
   // 没有可滚动内容时隐藏按钮
   if (!hasScrollableContent) {
     showScrollButton.value = false
@@ -732,6 +761,8 @@ export {
   selectConversation,
   deleteConversation,
   renameConversation,
+  clearCurrentConversation,
+  stopGeneration,
   toggleThinking,
   sendMessage,
   handleInput,

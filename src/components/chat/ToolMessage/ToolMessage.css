@@ -25,7 +25,7 @@
 @keyframes toolCompletedFadeIn {
   from {
     opacity: 0;
-    transform: translateX(-8px);
+    transform: translateX(calc(-1 * var(--rfs-space-lg)));
   }
   to {
     opacity: 1;
@@ -37,8 +37,8 @@
   position: relative;
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: var(--rfs-space-lg);
+  padding: var(--rfs-space-lg) var(--rfs-space-xl);
   background: rgba(255, 255, 255, 0.8);
   border: var(--border-细);
   box-shadow: var(--shadow-墨-浅);
@@ -62,8 +62,8 @@
 /* ========== 工具图标 ========== */
 .tool-icon-wrapper {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: var(--rfs-size-2xl);
+  height: var(--rfs-size-2xl);
   flex-shrink: 0;
 }
 
@@ -90,8 +90,8 @@
 }
 
 .tool-icon svg {
-  width: 16px;
-  height: 16px;
+  width: var(--rfs-icon-md);
+  height: var(--rfs-icon-md);
 }
 
 .tool-icon.rotating {
@@ -107,11 +107,11 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 32px;
-  height: 32px;
-  margin-left: -16px;
-  margin-top: -16px;
-  border: 2px solid var(--ink-焦);
+  width: var(--rfs-size-2xl);
+  height: var(--rfs-size-2xl);
+  margin-left: calc(-1 * var(--rfs-size-lg));
+  margin-top: calc(-1 * var(--rfs-size-lg));
+  border: var(--rfs-border-md) solid var(--ink-焦);
   opacity: 0;
   animation: iconRippleEffect 2s ease-out infinite;
   clip-path: polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%);
@@ -141,7 +141,7 @@
 }
 
 .tool-name {
-  font-size: 13px;
+  font-size: var(--rfs-font-md);
   font-weight: 600;
   color: var(--ink-焦);
   font-family: var(--font-宋);
@@ -149,8 +149,8 @@
 }
 
 .tool-status {
-  font-size: 11px;
-  padding: 2px var(--spacing-中);
+  font-size: var(--rfs-font-sm);
+  padding: var(--rfs-space-xs) var(--spacing-中);
   font-weight: 500;
   background: var(--ink-晕染-浅);
 }
@@ -173,8 +173,8 @@
 /* 展开图标 */
 .tool-expand-icon {
   margin-left: auto;
-  width: 18px;
-  height: 18px;
+  width: var(--rfs-icon-lg);
+  height: var(--rfs-icon-lg);
   color: var(--ink-淡);
   transition: transform 0.3s ease;
   flex-shrink: 0;
@@ -205,7 +205,7 @@
 
 .tool-expand-enter-to,
 .tool-expand-leave-from {
-  max-height: 250px;
+  max-height: clamp(200px, 30vh, 250px);
   opacity: 1;
   margin-top: var(--spacing-紧);
 }
@@ -216,31 +216,31 @@
 }
 
 .tool-section-label {
-  font-size: 11px;
+  font-size: var(--rfs-font-sm);
   color: var(--ink-淡);
-  margin-bottom: 4px;
+  margin-bottom: var(--rfs-space-xs);
   letter-spacing: 0.5px;
 }
 
 .tool-json {
   margin: 0;
-  padding: 10px;
+  padding: var(--rfs-space-lg);
   background: var(--ink-晕染-浅);
-  font-size: 11px;
+  font-size: var(--rfs-font-sm);
   font-family: 'Courier New', monospace;
   color: var(--ink-重);
   line-height: 1.5;
   overflow-x: auto;
-  border-left: 2px solid var(--ink-焦);
+  border-left: var(--rfs-border-md) solid var(--ink-焦);
 }
 
 .tool-result-content {
-  padding: 10px;
+  padding: var(--rfs-space-lg);
   background: var(--ink-晕染-浅);
-  font-size: 12px;
+  font-size: var(--rfs-font-base);
   color: var(--ink-焦);
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
-  border-left: 2px solid var(--ink-焦);
+  border-left: var(--rfs-border-md) solid var(--ink-焦);
 }

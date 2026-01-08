@@ -45,64 +45,64 @@
 .markdown-content {
   position: relative;
   z-index: 1;
-  font-size: 15px;
+  font-size: var(--rfs-font-md);
   line-height: 1.8;
   color: var(--ink-焦);
 }
 
 /* 标题样式 */
 .markdown-content :deep(.ink-h1) {
-  font-size: 22px;
+  font-size: var(--rfs-font-xl);
   font-weight: bold;
-  margin: var(--spacing-宽) 0 12px;
+  margin: var(--spacing-宽) 0 var(--rfs-space-lg);
   padding-bottom: var(--spacing-中);
-  border-bottom: 2px solid var(--ink-焦);
+  border-bottom: var(--rfs-border-md) solid var(--ink-焦);
   color: var(--ink-焦);
   font-family: var(--font-宋);
-  letter-spacing: 3px;
+  letter-spacing: var(--rfs-space-md);
 }
 
 .markdown-content :deep(.ink-h2) {
-  font-size: 19px;
+  font-size: var(--rfs-font-lg);
   font-weight: bold;
-  margin: 14px 0 10px;
+  margin: var(--rfs-space-xl) 0 var(--rfs-space-lg);
   color: var(--ink-焦);
   font-family: var(--font-宋);
-  letter-spacing: 2px;
+  letter-spacing: var(--rfs-space-md);
 }
 
 .markdown-content :deep(.ink-h3) {
-  font-size: 17px;
+  font-size: var(--rfs-font-base);
   font-weight: 600;
-  margin: 12px 0 var(--spacing-紧);
+  margin: var(--rfs-space-lg) 0 var(--spacing-紧);
   color: var(--ink-重);
 }
 
 /* 段落样式 */
 .markdown-content :deep(.ink-p) {
-  margin: 10px 0;
+  margin: var(--rfs-space-lg) 0;
   text-align: justify;
 }
 
 /* 列表样式 */
 .markdown-content :deep(.ink-ul),
 .markdown-content :deep(.ink-ol) {
-  margin: 12px 0;
-  padding-left: 24px;
+  margin: var(--rfs-space-lg) 0;
+  padding-left: var(--rfs-space-2xl);
 }
 
 .markdown-content :deep(.ink-li) {
-  margin: 6px 0;
+  margin: var(--rfs-space-md) 0;
   position: relative;
 }
 
 .markdown-content :deep(.ink-ul .ink-li)::before {
   content: '◆';
   position: absolute;
-  left: -20px;
+  left: calc(-1 * var(--rfs-space-xl));
   color: var(--ink-焦);
-  font-size: 10px;
-  top: 4px;
+  font-size: var(--rfs-font-xs);
+  top: var(--rfs-space-md);
 }
 
 .markdown-content :deep(.ink-ol) {
@@ -113,7 +113,7 @@
   counter-increment: ink-counter;
   content: counter(ink-counter) '.';
   position: absolute;
-  left: -24px;
+  left: calc(-1 * var(--rfs-space-2xl));
   color: var(--ink-重);
   font-weight: 500;
 }
@@ -121,8 +121,8 @@
 /* 引用样式 */
 .markdown-content :deep(.ink-blockquote) {
   margin: var(--spacing-宽) 0;
-  padding: 12px 20px;
-  border-left: 3px solid var(--ink-焦);
+  padding: var(--rfs-space-lg) var(--rfs-space-xl);
+  border-left: var(--rfs-border-md) solid var(--ink-焦);
   background: var(--ink-晕染-浅);
   font-style: italic;
   color: var(--ink-重);
@@ -134,10 +134,10 @@
 
 /* 代码样式 */
 .markdown-content :deep(.ink-code) {
-  padding: 2px var(--spacing-中);
+  padding: var(--rfs-space-xs) var(--spacing-中);
   background: var(--ink-晕染-浅);
   font-family: 'Courier New', monospace;
-  font-size: 13px;
+  font-size: var(--rfs-font-md);
   color: var(--ink-重);
 }
 
@@ -153,7 +153,7 @@
   background: #3a3a3a;
   color: var(--paper-新);
   font-family: 'Courier New', monospace;
-  font-size: 13px;
+  font-size: var(--rfs-font-md);
   line-height: 1.6;
   overflow-x: auto;
 }
@@ -198,7 +198,7 @@
 .markdown-content :deep(.ink-link) {
   color: var(--ink-焦);
   text-decoration: none;
-  border-bottom: 1px solid var(--ink-焦);
+  border-bottom: var(--rfs-border-sm) solid var(--ink-焦);
   transition: all 0.2s ease;
 }
 
@@ -222,21 +222,21 @@
   width: 100%;
   border-collapse: collapse;
   margin: var(--spacing-宽) 0;
-  font-size: 14px;
+  font-size: var(--rfs-font-base);
 }
 
 .markdown-content :deep(th) {
-  padding: 10px 12px;
+  padding: var(--rfs-space-lg) var(--rfs-space-lg);
   background: var(--ink-焦);
   color: var(--paper-新);
-  border: 1px solid rgba(26, 26, 26, 0.15);
+  border: var(--rfs-border-sm) solid rgba(26, 26, 26, 0.15);
   font-weight: 600;
   text-align: left;
 }
 
 .markdown-content :deep(td) {
-  padding: 10px 12px;
-  border: 1px solid rgba(26, 26, 26, 0.1);
+  padding: var(--rfs-space-lg) var(--rfs-space-lg);
+  border: var(--rfs-border-sm) solid rgba(26, 26, 26, 0.1);
 }
 
 .markdown-content :deep(tr:nth-child(even)) {
@@ -246,10 +246,10 @@
 /* 流式光标 */
 .streaming-cursor {
   display: inline-block;
-  width: 3px;
-  height: 18px;
+  width: var(--rfs-border-md);
+  height: var(--rfs-space-xl);
   background: var(--ink-焦);
-  margin-left: 2px;
+  margin-left: var(--rfs-space-xs);
   vertical-align: middle;
   animation: cursorBlink 1s step-end infinite;
 }
@@ -265,7 +265,7 @@
   bottom: 0;
   left: 15%;
   width: 70%;
-  height: 15px;
+  height: var(--rfs-space-xl);
   overflow: hidden;
   pointer-events: none;
 }
@@ -276,7 +276,7 @@
   background: radial-gradient(ellipse at center,
     rgba(0, 0, 0, 0.06) 0%,
     transparent 70%);
-  filter: blur(3px);
+  filter: blur(var(--rfs-space-md));
   animation: dripPulse 3s ease-in-out infinite;
 }
 

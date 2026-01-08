@@ -56,6 +56,148 @@
                 <p class="welcome-title">灵犀问答</p>
               </div>
 
+              <!-- 输入区域（欢迎界面时） -->
+              <div v-if="!isSplitLayoutMode" class="input-area" :class="{ 'centered': !shouldShowInputAtBottom }">
+                <!-- 滚动按钮 (动态显示) -->
+                <Transition name="scroll-button-fade">
+                  <button
+                    v-if="showScrollButton"
+                    @click="handleScrollButtonClick"
+                    class="scroll-navigation-btn"
+                    :title="scrollButtonTarget === 'bottom' ? '回到底部' : '回到顶部'"
+                  >
+                    <svg v-if="scrollButtonTarget === 'bottom'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6,9 12,15 18,9"/>
+                    </svg>
+                    <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="18,15 12,9 6,15"/>
+                    </svg>
+                  </button>
+                </Transition>
+                <div class="input-container">
+                  <!-- 输入框包装器 -->
+                  <div class="input-wrapper-ink">
+                    <div class="input-inner-wrapper">
+                      <!-- 文本输入区域 -->
+                      <div class="textarea-wrapper">
+                        <!-- 当前模式显示 -->
+                        <div v-if="currentModeLabel" class="current-mode-display">
+                          <span class="mode-name">{{ currentModeLabel }}</span>
+                          <span class="mode-desc">{{ getModeDescription(currentChatMode) }}</span>
+                        </div>
+                        <textarea
+                          v-model="inputMessage"
+                          @input="handleInput"
+                          @keydown.enter.exact.prevent="sendMessage"
+                          class="message-input"
+                          :placeholder="inputPlaceholder"
+                          rows="1"
+                          ref="inputRef"
+                        ></textarea>
+                      </div>
+
+                      <!-- 发送按钮 -->
+                      <button
+                        @click="sendMessage"
+                        class="send-btn-circle"
+                        :disabled="!inputMessage.trim() || isSending"
+                        :class="{ 'sending': isSending }"
+                      >
+                        <div class="send-seal">
+                          <svg class="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 2L11 13"/>
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+                          </svg>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 底部工具栏 -->
+                  <div class="input-toolbar">
+                    <!-- 左侧功能按钮组 -->
+                    <div class="toolbar-left">
+                      <!-- +号按钮（附件） -->
+                      <button class="tool-btn attachment-btn" @click="handleAttachment" title="上传图片或文件">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="12" y1="5" x2="12" y2="19"/>
+                          <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                      </button>
+
+                      <!-- 可复选功能按钮（深度思考、搜索） -->
+                      <div class="feature-buttons-wrapper">
+                        <button
+                          v-for="feature in visibleFeatureButtons"
+                          :key="feature.id"
+                          class="tool-btn mode-btn feature-btn"
+                          :class="{ 'active': isFeatureEnabled(feature.id) }"
+                          @click="toggleFeature(feature.id)"
+                          :title="feature.label"
+                        >
+                          <!-- 深度思考图标 -->
+                          <svg v-if="feature.id === 'deepThink'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v6m0 6v6"/>
+                            <path d="M1 12h6m6 0h6"/>
+                          </svg>
+                          <!-- 搜索图标 -->
+                          <svg v-else-if="feature.id === 'search'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                          </svg>
+                          <span>{{ feature.label }}</span>
+                        </button>
+                      </div>
+
+                      <!-- 聊天模式按钮（单选） -->
+                      <div class="mode-buttons-scroll">
+                        <div class="mode-buttons-wrapper">
+                          <button
+                            v-for="mode in visibleChatModes"
+                            :key="mode.id"
+                            class="tool-btn mode-btn"
+                            :class="{ 'active': isModeActive(mode.id) }"
+                            @click="switchChatMode(mode.id)"
+                            :title="getModeDescription(mode.id)"
+                          >
+                            {{ mode.label }}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 右侧：清空和停止 -->
+                    <div class="toolbar-right">
+                      <!-- 清空按钮 -->
+                      <button
+                        v-if="hasActiveChat && (messages.length > 0 || isThinking)"
+                        @click="clearCurrentConversation"
+                        class="tool-btn"
+                        title="清空对话"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3,6 5,6 21,6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                      </button>
+
+                      <!-- 停止生成按钮 -->
+                      <button
+                        v-if="isThinking || isSending"
+                        @click="stopGeneration"
+                        class="tool-btn stop-btn"
+                        title="停止生成"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- 下部分：副标题和提示 -->
               <div class="welcome-content-bottom">
                 <p class="welcome-subtitle">笔墨之间，智慧流淌</p>
@@ -243,6 +385,13 @@
 
                   <!-- 右侧：渲染面板（普通内容按模式渲染） -->
                   <div class="split-right-panel">
+                    <!-- 顶部标题栏 -->
+                    <div class="right-panel-header">
+                      <div class="header-decoration-left"></div>
+                      <h3 class="right-panel-title">实时跟随</h3>
+                      <div class="header-decoration-right"></div>
+                    </div>
+
                     <div class="right-content-wrapper">
                       <!-- 渲染最后一条有内容的 AI 消息 -->
                       <div v-if="lastAiMessage" class="render-content-area">
@@ -335,8 +484,8 @@
           </Transition>
         </div>
 
-        <!-- 输入区域（仅在普通布局下显示） -->
-        <div v-if="!isSplitLayoutMode" class="input-area" :class="{ 'centered': !shouldShowInputAtBottom, 'at-bottom': shouldShowInputAtBottom }">
+        <!-- 输入区域（仅在普通布局下显示，有会话时） -->
+        <div v-if="!isSplitLayoutMode && hasActiveChat" class="input-area at-bottom">
           <!-- 滚动按钮 (动态显示) -->
           <Transition name="scroll-button-fade">
             <button
@@ -520,6 +669,8 @@ import {
   selectConversation,
   deleteConversation,
   renameConversation,
+  clearCurrentConversation,
+  stopGeneration,
   toggleThinking,
   sendMessage,
   handleInput,

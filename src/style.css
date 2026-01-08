@@ -1,7 +1,53 @@
 /* ========== 水墨画配色体系 - 墨分五色 ========== */
 
-/* CSS 变量定义 - 精致水墨配色 */
+/* CSS 变量定义 - 精致水墨配色 + 响应式变量 */
 :root {
+  /* ========== 响应式变量 ========== */
+  /* 响应式字体大小 - 降低vw百分比，使缩放更平缓 */
+  --rfs-font-xs: clamp(10px, 0.5vw, 12px);
+  --rfs-font-sm: clamp(11px, 0.6vw, 13px);
+  --rfs-font-base: clamp(12px, 0.8vw, 14px);
+  --rfs-font-md: clamp(13px, 0.9vw, 15px);
+  --rfs-font-lg: clamp(14px, 1vw, 16px);
+  --rfs-font-xl: clamp(16px, 1.2vw, 18px);
+  --rfs-font-2xl: clamp(18px, 1.5vw, 20px);
+  --rfs-font-3xl: clamp(20px, 2vw, 24px);
+  --rfs-font-4xl: clamp(24px, 2.5vw, 32px);
+
+  /* 响应式间距 - 降低vw百分比，保持间距一致性 */
+  --rfs-space-xs: clamp(2px, 0.3vw, 4px);
+  --rfs-space-sm: clamp(4px, 0.5vw, 8px);
+  --rfs-space-md: clamp(6px, 0.6vw, 12px);
+  --rfs-space-lg: clamp(8px, 0.6vw, 16px);
+  --rfs-space-xl: clamp(12px, 0.8vw, 20px);
+  --rfs-space-2xl: clamp(16px, 1.2vw, 24px);
+  --rfs-space-3xl: clamp(20px, 1.5vw, 32px);
+  --rfs-space-4xl: clamp(24px, 2vw, 40px);
+
+  /* 响应式边框 */
+  --rfs-border-sm: clamp(1px, 0.15vw, 1px);
+  --rfs-border-md: clamp(1px, 0.2vw, 2px);
+  --rfs-border-lg: clamp(2px, 0.3vw, 3px);
+
+  /* 响应式圆角 */
+  --rfs-radius-sm: clamp(3px, 0.5vw, 4px);
+  --rfs-radius-md: clamp(6px, 1vw, 8px);
+  --rfs-radius-lg: clamp(8px, 1.5vw, 12px);
+  --rfs-radius-xl: clamp(12px, 2vw, 16px);
+
+  /* 响应式尺寸 - 控件和图标大小 */
+  --rfs-size-sm: clamp(12px, 2vw, 24px);
+  --rfs-size-md: clamp(24px, 3vw, 40px);
+  --rfs-size-lg: clamp(32px, 4vw, 56px);
+  --rfs-size-xl: clamp(48px, 3vw, 80px);
+  --rfs-size-2xl: clamp(64px, 4vw, 120px);
+
+  /* 响应式图标大小 */
+  --rfs-icon-sm: clamp(12px, 1.5vw, 16px);
+  --rfs-icon-md: clamp(14px, 1.8vw, 20px);
+  --rfs-icon-lg: clamp(16px, 2vw, 24px);
+  --rfs-icon-xl: clamp(18px, 2.5vw, 28px);
+
   /* ========== 墨分五色 ========== */
   /* 焦墨 - 最深，用于主要文字、边框 */
   --ink-焦: #1a1a1a;
@@ -49,22 +95,22 @@
 
   /* ========== 阴影体系 ========== */
   /* 水墨晕染阴影 */
-  --shadow-墨-浅: 0 2px 8px rgba(26, 26, 26, 0.04);
-  --shadow-墨-中: 0 4px 16px rgba(26, 26, 26, 0.08);
-  --shadow-墨-深: 0 8px 32px rgba(26, 26, 26, 0.12);
+  --shadow-墨-浅: 0 var(--rfs-space-sm) var(--rfs-space-md) rgba(26, 26, 26, 0.04);
+  --shadow-墨-中: 0 var(--rfs-space-md) var(--rfs-space-lg) rgba(26, 26, 26, 0.08);
+  --shadow-墨-深: 0 var(--rfs-space-lg) var(--rfs-space-3xl) rgba(26, 26, 26, 0.12);
 
   /* ========== 边框体系 ========== */
-  --border-细: 1px solid rgba(26, 26, 26, 0.06);
-  --border-中: 1px solid rgba(26, 26, 26, 0.1);
-  --border-粗: 2px solid rgba(26, 26, 26, 0.15);
+  --border-细: var(--rfs-border-sm) solid rgba(26, 26, 26, 0.06);
+  --border-中: var(--rfs-border-sm) solid rgba(26, 26, 26, 0.1);
+  --border-粗: var(--rfs-border-md) solid rgba(26, 26, 26, 0.15);
 
   /* ========== 间距体系 ========== */
-  --spacing-密: 4px;
-  --spacing-紧: 8px;
-  --spacing-中: 12px;
-  --spacing-宽: 16px;
-  --spacing-松: 20px;
-  --spacing-展: 24px;
+  --spacing-密: var(--rfs-space-sm);
+  --spacing-紧: var(--rfs-space-md);
+  --spacing-中: var(--rfs-space-lg);
+  --spacing-宽: var(--rfs-space-xl);
+  --spacing-松: var(--rfs-space-2xl);
+  --spacing-展: var(--rfs-space-3xl);
 
   /* ========== 字体体系 ========== */
   /* 古风楷体 - 主要字体，具有手写感和代码风格 */
@@ -92,7 +138,7 @@ body {
 
 body {
   font-family: var(--font-宋);
-  font-size: 16px;
+  font-size: var(--rfs-font-lg);
   line-height: 1.8;
   color: var(--ink-浓);
   background: var(--paper-新);
@@ -108,8 +154,8 @@ body {
 
 /* ========== 滚动条 - 水墨风格 ========== */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: var(--rfs-space-sm);
+  height: var(--rfs-space-sm);
 }
 
 ::-webkit-scrollbar-track {
@@ -118,7 +164,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--ink-淡);
-  border-radius: 3px;
+  border-radius: var(--rfs-radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -146,7 +192,7 @@ body {
 a {
   color: var(--ink-浓);
   text-decoration: none;
-  border-bottom: 1px solid transparent;
+  border-bottom: var(--rfs-border-sm) solid transparent;
   transition: all 0.2s ease;
 }
 
@@ -165,8 +211,8 @@ button {
 }
 
 button:focus-visible {
-  outline: 2px solid var(--ink-浓);
-  outline-offset: 2px;
+  outline: var(--rfs-border-md) solid var(--ink-浓);
+  outline-offset: var(--rfs-space-sm);
 }
 
 /* ========== 输入框重置 ========== */
@@ -209,12 +255,12 @@ img {
 /* ========== 响应式 ========== */
 @media (max-width: 768px) {
   body {
-    font-size: 14px;
+    font-size: var(--rfs-font-md);
   }
 }
 
 @media (max-width: 480px) {
   body {
-    font-size: 13px;
+    font-size: var(--rfs-font-base);
   }
 }

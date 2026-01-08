@@ -1,3 +1,52 @@
+/* ========== 全局响应式变量 ========== */
+:root {
+  /* 响应式字体大小 */
+  --rfs-font-xs: clamp(10px, 1.5vw, 12px);
+  --rfs-font-sm: clamp(11px, 1.8vw, 13px);
+  --rfs-font-base: clamp(12px, 2vw, 14px);
+  --rfs-font-md: clamp(13px, 2.2vw, 15px);
+  --rfs-font-lg: clamp(14px, 2.5vw, 16px);
+  --rfs-font-xl: clamp(16px, 3vw, 18px);
+  --rfs-font-2xl: clamp(18px, 3.5vw, 20px);
+  --rfs-font-3xl: clamp(20px, 4vw, 24px);
+  --rfs-font-4xl: clamp(24px, 5vw, 32px);
+
+  /* 响应式间距 */
+  --rfs-space-xs: clamp(2px, 0.4vw, 4px);
+  --rfs-space-sm: clamp(4px, 0.8vw, 8px);
+  --rfs-space-md: clamp(6px, 1.2vw, 12px);
+  --rfs-space-lg: clamp(8px, 1.5vw, 16px);
+  --rfs-space-xl: clamp(12px, 2vw, 20px);
+  --rfs-space-2xl: clamp(16px, 2.5vw, 24px);
+  --rfs-space-3xl: clamp(20px, 3vw, 32px);
+  --rfs-space-4xl: clamp(24px, 4vw, 40px);
+
+  /* 响应式边框 */
+  --rfs-border-sm: clamp(1px, 0.15vw, 1px);
+  --rfs-border-md: clamp(1px, 0.2vw, 2px);
+  --rfs-border-lg: clamp(2px, 0.3vw, 3px);
+
+  /* 响应式圆角 */
+  --rfs-radius-sm: clamp(3px, 0.5vw, 4px);
+  --rfs-radius-md: clamp(6px, 1vw, 8px);
+  --rfs-radius-lg: clamp(8px, 1.5vw, 12px);
+  --rfs-radius-xl: clamp(12px, 2vw, 16px);
+
+  /* 响应式尺寸 */
+  --rfs-size-xs: clamp(20px, 3vw, 32px);
+  --rfs-size-sm: clamp(24px, 4vw, 36px);
+  --rfs-size-md: clamp(28px, 5vw, 48px);
+  --rfs-size-lg: clamp(32px, 6vw, 64px);
+  --rfs-size-xl: clamp(48px, 8vw, 80px);
+  --rfs-size-2xl: clamp(64px, 10vw, 120px);
+
+  /* 响应式图标尺寸 */
+  --rfs-icon-sm: clamp(12px, 2vw, 16px);
+  --rfs-icon-md: clamp(14px, 2.5vw, 18px);
+  --rfs-icon-lg: clamp(16px, 3vw, 20px);
+  --rfs-icon-xl: clamp(20px, 3.5vw, 24px);
+}
+
 /* ========== 全局容器 - 水墨画风格 ========== */
 .ink-wash-chat-container {
   position: relative;
@@ -6,6 +55,7 @@
   overflow: hidden;
   background: var(--paper-新);
   font-family: var(--font-宋);
+  font-size: var(--rfs-font-base);
 }
 
 /* ========== 水墨晕染背景 ========== */
@@ -199,31 +249,53 @@
 /* ========== 欢迎界面 ========== */
 .welcome-container {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 100%;
+  max-width: clamp(600px, 70vw, 900px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 20px 200px;
-  z-index: 20; /* 确保在输入框之上 */
+  padding: clamp(20px, 5vh, 60px) 20px;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .welcome-content-top {
   text-align: center;
   animation: welcomeFadeIn 1s cubic-bezier(0.22, 1, 0.36, 1);
-  max-width: 600px;
-  margin-bottom: auto; /* 推到顶部 */
-  margin-top: 40px;
+  width: 100%;
+  flex-shrink: 0;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(12px, 2vh, 24px);
+}
+
+/* 欢迎容器内的输入框 */
+.welcome-container .input-area {
   position: relative;
-  z-index: 20;
+  width: 100%;
+  max-width: 100%;
+  margin: clamp(40px, 6vh, 80px) 0;
+  pointer-events: auto;
+  z-index: 15;
 }
 
 .welcome-content-bottom {
   text-align: center;
   animation: welcomeFadeIn 1s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
-  max-width: 600px;
-  margin-top: auto; /* 推到底部 */
-  margin-bottom: 140px; /* 为输入框留出空间 */
+  width: auto;
+  flex-shrink: 0;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 1.5vh, 12px);
+  margin-top: clamp(20px, 4vh, 40px);
   position: relative;
   z-index: 20;
 }
@@ -241,9 +313,9 @@
 
 .welcome-ink-art {
   position: relative;
-  width: 220px;
-  height: 220px;
-  margin: 0 auto 48px;
+  width: clamp(150px, 12vw, 220px);
+  height: clamp(150px, 12vw, 220px);
+  margin: 0 auto clamp(24px, 4vh, 48px);
 }
 
 .ink-circle-large {
@@ -268,35 +340,35 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 96px;
+  font-size: clamp(48px, 4vw, 96px);
   font-weight: 900;
   color: var(--ink-焦);
   font-family: var(--font-楷);
   opacity: 0.15;
-  letter-spacing: 24px;
+  letter-spacing: clamp(12px, 1.5vw, 24px);
 }
 
 .welcome-title {
-  font-size: 32px;
+  font-size: clamp(20px, 2vw, 32px);
   font-weight: 600;
   color: var(--ink-焦);
   font-family: var(--font-宋);
   margin-bottom: var(--spacing-中);
-  letter-spacing: 16px;
+  letter-spacing: clamp(8px, 1vw, 16px);
 }
 
 .welcome-subtitle {
-  font-size: 16px;
+  font-size: clamp(14px, 1.5vw, 16px);
   color: var(--ink-重);
   font-family: var(--font-楷);
   margin-bottom: var(--spacing-展);
-  letter-spacing: 4px;
+  letter-spacing: clamp(2px, 0.4vw, 4px);
 }
 
 .welcome-hint {
-  font-size: 14px;
+  font-size: clamp(12px, 2.5vw, 14px);
   color: var(--ink-淡);
-  letter-spacing: 2px;
+  letter-spacing: clamp(1px, 0.3vw, 2px);
 }
 
 /* 欢迎界面过渡动画 */
@@ -541,32 +613,25 @@
   letter-spacing: 1px;
 }
 
-/* ========== 输入区域 - 重新设计 ========== */
+/* ========== 输入区域 - 有会话时显示 ========== */
 .input-area {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
   transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  z-index: 10;
+  z-index: 15;
+  max-width: clamp(500px, 60vw, 800px);
+  width: calc(100% - 80px);
 }
 
-/* 居中状态 */
-.input-area.centered {
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 85%;
-  max-width: 800px;
-  bottom: auto;
-}
-
-/* 底部状态 */
+/* 有会话时的输入框显示在底部 */
 .input-area.at-bottom {
   top: auto;
-  bottom: 40px;
-  width: 80%;
-  max-width: 900px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: clamp(20px, 4vh, 40px);
+  width: calc(100% - 80px);
+  max-width: clamp(500px, 55vw, 800px);
+  z-index: 20;
 }
 
 /* 输入容器 */
@@ -574,6 +639,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-紧);
+  position: relative;
+  z-index: 15;
 }
 
 /* 输入框水墨包装器 */
@@ -585,6 +652,7 @@
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   overflow: hidden;
+  z-index: 15;
 }
 
 /* 水墨装饰边框 */
@@ -1627,5 +1695,84 @@
   /* 移动端隐藏模式名称，只显示图标 */
   .current-mode-display-compact .mode-name-compact {
     display: none;
+  }
+}
+
+/* ========== 响应式断点 ========== */
+
+/* 大屏幕 - 侧边栏可见 */
+@media (min-width: 1441px) {
+  .welcome-container {
+    max-width: 900px;
+  }
+
+  .input-area {
+    max-width: 800px;
+  }
+
+  .ink-text-large {
+    font-size: clamp(48px, 3.5vw, 96px);
+  }
+}
+
+/* 中等屏幕 */
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .welcome-container {
+    max-width: 70vw;
+  }
+
+  .input-area {
+    max-width: 60vw;
+  }
+
+  .ink-text-large {
+    font-size: clamp(48px, 3vw, 80px);
+  }
+}
+
+/* 小屏幕/笔记本 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .welcome-container {
+    max-width: 65vw;
+    padding: 40px 20px;
+  }
+
+  .welcome-content-bottom {
+    margin-top: clamp(15px, 3vh, 30px);
+  }
+
+  .ink-text-large {
+    font-size: clamp(48px, 5vw, 72px);
+  }
+
+  .welcome-ink-art {
+    width: clamp(120px, 15vw, 180px);
+    height: clamp(120px, 15vw, 180px);
+  }
+}
+
+/* 平板/移动端 */
+@media (max-width: 768px) {
+  .welcome-container {
+    max-width: 90vw;
+    padding: 30px 20px;
+  }
+
+  .welcome-content-bottom {
+    margin-top: clamp(10px, 2vh, 20px);
+  }
+
+  .input-area.at-bottom {
+    width: calc(100% - 40px);
+    bottom: var(--spacing-中);
+  }
+
+  .ink-text-large {
+    font-size: clamp(48px, 8vw, 64px);
+  }
+
+  .welcome-ink-art {
+    width: clamp(120px, 20vw, 180px);
+    height: clamp(120px, 20vw, 180px);
   }
 }
