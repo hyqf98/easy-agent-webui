@@ -55,7 +55,7 @@
         <button
           @click="sendMessage"
           :class="[mode === 'compact' ? 'send-btn-compact' : 'send-btn-circle', { 'sending': isSending }]"
-          :disabled="!inputMessage.trim() || isSending"
+          :disabled="!(inputMessage || '').trim() || isSending"
         >
           <div :class="mode === 'compact' ? 'send-seal-compact' : 'send-seal'">
             <svg class="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -107,59 +107,57 @@
         <div v-if="mode === 'normal'" class="mode-buttons-scroll">
           <div class="mode-buttons-wrapper">
             <button
-              v-for="mode in visibleChatModes"
-              :key="mode.id"
+              v-for="chatMode in visibleChatModes"
+              :key="chatMode.id"
               class="tool-btn mode-btn chat-mode-btn"
-              :class="{ 'active': isModeActive(mode.id) }"
-              @click="switchChatMode(mode.id)"
-              :title="mode.label"
+              :class="{ 'active': isModeActive(chatMode.id) }"
+              @click="switchChatMode(chatMode.id)"
+              :title="chatMode.label"
             >
-              <!-- 图标 -->
-              <svg v-if="mode.id === 'chat'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <!-- 图标 - 使用chatMode数组中定义的icon -->
+              <svg v-if="chatMode.id === 'chat'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
-              <svg v-else-if="mode.id === 'markdown'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg v-else-if="chatMode.id === 'markdown'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                 <path d="M8 12h8"/>
                 <path d="M12 8v8"/>
               </svg>
-              <svg v-else-if="mode.id === 'web'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg v-else-if="chatMode.id === 'web'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="2" y1="12" x2="22" y2="12"/>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
               </svg>
-              <svg v-else-if="mode.id === 'ppt'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg v-else-if="chatMode.id === 'ppt'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
                 <line x1="8" y1="21" x2="16" y2="21"/>
                 <line x1="12" y1="17" x2="12" y2="21"/>
               </svg>
-              <span>{{ mode.label }}</span>
+              <span>{{ chatMode.label }}</span>
             </button>
           </div>
         </div>
 
         <!-- 当前模式显示（仅紧凑模式） -->
         <div v-if="mode === 'compact'" class="current-mode-display-compact">
-          <span class="mode-icon-compact">
-            <svg v-if="currentChatMode === 'chat'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <svg v-else-if="currentChatMode === 'markdown'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <path d="M8 12h8"/>
-              <path d="M12 8v8"/>
-            </svg>
-            <svg v-else-if="currentChatMode === 'web'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="2" y1="12" x2="22" y2="12"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>
-            <svg v-else-if="currentChatMode === 'ppt'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-              <line x1="8" y1="21" x2="16" y2="21"/>
-              <line x1="12" y1="17" x2="12" y2="21"/>
-            </svg>
-          </span>
+          <svg v-if="currentChatMode === 'chat'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mode-icon-compact">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <svg v-else-if="currentChatMode === 'markdown'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mode-icon-compact">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <path d="M8 12h8"/>
+            <path d="M12 8v8"/>
+          </svg>
+          <svg v-else-if="currentChatMode === 'web'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mode-icon-compact">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <svg v-else-if="currentChatMode === 'ppt'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mode-icon-compact">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
           <span class="mode-name-compact">{{ currentModeLabel }}</span>
         </div>
       </div>

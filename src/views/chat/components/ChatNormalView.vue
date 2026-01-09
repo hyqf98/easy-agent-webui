@@ -6,8 +6,8 @@
         <div class="messages-inner">
           <!-- 空会话提示 -->
           <div v-if="messages && messages.length === 0" class="empty-conversation">
-            <div class="empty-icon">📝</div>
-            <p>开始这段对话...</p>
+            <div class="empty-icon">📜</div>
+            <p>提笔书写，开启对话...</p>
           </div>
 
           <!-- 消息列表 -->
@@ -64,7 +64,7 @@
               <div class="ripple ripple-2"></div>
               <div class="ripple ripple-3"></div>
             </div>
-            <span class="thinking-text">正在思考...</span>
+            <span class="thinking-text">正在研墨思索...</span>
           </div>
         </div>
       </div>

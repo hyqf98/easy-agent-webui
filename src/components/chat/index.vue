@@ -2,16 +2,22 @@
   <div class="conversation-list">
     <!-- 头部 -->
     <div class="list-header">
-      <div class="header-title">
-        <span class="title-text">对话记录</span>
-        <div class="title-decoration"></div>
+      <div class="header-content">
+        <div class="header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="header-text">
+          <h2 class="header-title">对话记录</h2>
+          <span class="header-count">{{ conversations.length }} 个对话</span>
+        </div>
       </div>
       <button class="new-chat-btn" @click="$emit('createChat')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="12" y1="5" x2="12" y2="19"/>
           <line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        <span>新建</span>
       </button>
     </div>
 
@@ -21,26 +27,37 @@
         <div
           v-for="conv in conversations"
           :key="conv.id"
-          class="conversation-item"
+          class="conversation-card"
           :class="{ 'active': conv.id === activeId }"
           @click="handleSelect(conv.id)"
           @contextmenu.prevent="showContextMenu($event, conv)"
         >
-          <div class="conversation-icon">
-            <span class="icon-text">{{ getIconText(conv.title) }}</span>
+          <!-- 左侧图标 -->
+          <div class="card-avatar">
+            <div class="avatar-inner">
+              <span class="avatar-text">{{ getIconText(conv.title) }}</span>
+            </div>
+            <div class="avatar-glow"></div>
           </div>
-          <div class="conversation-info">
-            <div class="conversation-title" :title="conv.title">{{ conv.title }}</div>
-            <div class="conversation-preview">{{ conv.preview }}</div>
-            <div class="conversation-time">{{ formatTime(conv.updatedAt) }}</div>
+
+          <!-- 中间内容 -->
+          <div class="card-content">
+            <div class="card-header-row">
+              <h3 class="card-title">{{ conv.title || '新对话' }}</h3>
+              <span class="card-time">{{ formatTime(conv.updatedAt) }}</span>
+            </div>
+            <p class="card-preview">{{ conv.preview || '暂无消息' }}</p>
           </div>
-          <!-- 更多操作按钮 -->
+
+          <!-- 右侧指示器 -->
+          <div class="card-indicator">
+            <div class="indicator-dot"></div>
+          </div>
+
+          <!-- 悬停操作按钮 -->
           <button
-            class="more-btn"
-            :class="{ 'show': conv.id === hoveredId || contextMenuConv?.id === conv.id }"
+            class="card-action-btn"
             @click.stop="showContextMenu($event, conv)"
-            @mouseenter="hoveredId = conv.id"
-            @mouseleave="hoveredId = null"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="1"/>
@@ -52,15 +69,24 @@
       </TransitionGroup>
 
       <!-- 空状态 -->
-      <div v-if="conversations.length === 0" class="empty-state">
-        <div class="empty-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
+      <Transition name="empty-fade">
+        <div v-if="conversations.length === 0" class="empty-state">
+          <div class="empty-illustration">
+            <div class="empty-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <div class="empty-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+          <h3 class="empty-title">暂无对话</h3>
+          <p class="empty-desc">点击右上角新建按钮开始您的第一段对话</p>
         </div>
-        <p class="empty-text">暂无对话记录</p>
-        <p class="empty-subtitle">点击"新建"开始对话</p>
-      </div>
+      </Transition>
     </div>
 
     <!-- 右键菜单 -->
@@ -74,7 +100,6 @@
           <div class="context-menu-inner">
             <div class="menu-header">
               <span class="menu-title">对话操作</span>
-              <div class="menu-decoration"></div>
             </div>
             <div class="menu-items">
               <button class="menu-item" @click="handleRename">
@@ -93,7 +118,6 @@
                 <span>删除对话</span>
               </button>
             </div>
-            <div class="menu-footer-decoration"></div>
           </div>
         </div>
       </Transition>
@@ -105,7 +129,12 @@
         <div v-if="renameDialogVisible" class="modal-overlay" @click="closeRenameDialog">
           <div class="rename-dialog" @click.stop>
             <div class="dialog-header">
-              <div class="dialog-seal">名</div>
+              <div class="dialog-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </div>
               <h3 class="dialog-title">重命名对话</h3>
             </div>
             <div class="dialog-body">
@@ -126,7 +155,6 @@
                 确认
               </button>
             </div>
-            <div class="dialog-decoration"></div>
           </div>
         </div>
       </Transition>
@@ -138,22 +166,27 @@
         <div v-if="deleteDialogVisible" class="modal-overlay" @click="closeDeleteDialog">
           <div class="delete-dialog" @click.stop>
             <div class="dialog-header">
-              <div class="dialog-seal dialog-seal-danger">警</div>
+              <div class="dialog-icon dialog-icon-danger">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
               <h3 class="dialog-title">确认删除</h3>
             </div>
             <div class="dialog-body">
               <p class="delete-message">确定要删除对话「{{ contextMenuConv?.title }}」吗？</p>
-              <p class="delete-hint">删除后将无法恢复</p>
+              <p class="delete-hint">此操作无法撤销</p>
             </div>
             <div class="dialog-footer">
               <button class="dialog-btn dialog-btn-secondary" @click="closeDeleteDialog">
                 取消
               </button>
               <button class="dialog-btn dialog-btn-danger" @click="confirmDelete">
-                确认删除
+                删除
               </button>
             </div>
-            <div class="dialog-decoration"></div>
           </div>
         </div>
       </Transition>
@@ -162,6 +195,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useConversationList, getIconText, formatTime } from '@/components/chat/ConversationList.js'
 
 const props = defineProps({
@@ -178,7 +212,6 @@ const props = defineProps({
 const emit = defineEmits(['createChat', 'selectChat', 'deleteChat', 'renameChat'])
 
 const {
-  hoveredId,
   contextMenuVisible,
   contextMenuPosition,
   contextMenuConv,

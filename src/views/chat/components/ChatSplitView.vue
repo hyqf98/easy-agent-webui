@@ -45,8 +45,8 @@
 
                         <!-- 内容生成进度提示 -->
                         <div v-if="message.content || message.isStreaming" class="content-progress-hint">
-                          <span v-if="message.isStreaming" class="generating-text">正在生成内容...</span>
-                          <span v-else class="completed-text">已完成</span>
+                          <span v-if="message.isStreaming" class="generating-text">正在研磨笔墨...</span>
+                          <span v-else class="completed-text">已成稿</span>
                           <span v-if="message.content" class="content-preview">{{ message.content.substring(0, 100) }}{{ message.content.length > 100 ? '...' : '' }}</span>
                         </div>
                       </div>
@@ -61,7 +61,7 @@
                     <div class="ripple ripple-2"></div>
                     <div class="ripple ripple-3"></div>
                   </div>
-                  <span class="thinking-text">正在思考...</span>
+                  <span class="thinking-text">正在研墨思索...</span>
                 </div>
               </div>
 
@@ -86,8 +86,34 @@
 
                 <ChatInputArea
                   mode="compact"
-                  v-bind="$attrs"
+                  :inputMessage="inputMessage"
+                  :inputPlaceholder="inputPlaceholder"
+                  :isSending="isSending"
+                  :isThinking="isThinking"
+                  :hasActiveChat="hasActiveChat"
+                  :messages="messages"
+                  :currentChatMode="currentChatMode"
+                  :currentModeLabel="currentModeLabel"
+                  :visibleChatModes="visibleChatModes"
+                  :visibleFeatureButtons="visibleFeatureButtons"
+                  :enabledFeatures="enabledFeatures"
+                  :showScrollButton="showScrollButton"
+                  :scrollButtonTarget="scrollButtonTarget"
+                  :leftScrollButtonTarget="leftScrollButtonTarget"
                   :hideScrollButton="true"
+                  @update:inputMessage="handleInputMessageUpdate"
+                  :sendMessage="sendMessage"
+                  :handleInput="handleInput"
+                  :handleAttachment="handleAttachment"
+                  :handleScrollButtonClick="handleScrollButtonClick"
+                  :handleLeftScrollButtonClick="handleLeftScrollButtonClick"
+                  :toggleFeature="toggleFeature"
+                  :switchChatMode="switchChatMode"
+                  :clearCurrentConversation="clearCurrentConversation"
+                  :stopGeneration="stopGeneration"
+                  :isFeatureEnabled="isFeatureEnabled"
+                  :isModeActive="isModeActive"
+                  :getModeDescription="getModeDescription"
                 />
               </div>
             </div>
@@ -126,8 +152,8 @@
 
                 <!-- 空状态 -->
                 <div v-else class="render-empty-state">
-                  <div class="empty-icon">📄</div>
-                  <p>等待生成内容...</p>
+                  <div class="empty-icon">📜</div>
+                  <p>静待墨迹落纸...</p>
                 </div>
               </div>
             </div>
@@ -155,6 +181,17 @@ const props = defineProps({
   lastAiMessage: [Object, null],
   showLeftScrollButton: Boolean,
   leftScrollButtonTarget: String,
+  // ChatInputArea 需要的 props
+  inputMessage: String,
+  inputPlaceholder: String,
+  isSending: Boolean,
+  hasActiveChat: Boolean,
+  currentModeLabel: String,
+  visibleChatModes: Array,
+  visibleFeatureButtons: Array,
+  enabledFeatures: Array,
+  showScrollButton: Boolean,
+  scrollButtonTarget: String,
   // 方法
   toggleThinking: Function,
   checkScrollPosition: Function,
@@ -162,13 +199,29 @@ const props = defineProps({
   handleScroll: Function,
   handleLeftScroll: Function,
   handleLeftScrollButtonClick: Function,
+  sendMessage: Function,
+  handleInput: Function,
+  handleAttachment: Function,
+  handleScrollButtonClick: Function,
+  toggleFeature: Function,
+  switchChatMode: Function,
+  clearCurrentConversation: Function,
+  stopGeneration: Function,
+  isFeatureEnabled: Function,
+  isModeActive: Function,
+  getModeDescription: Function,
 })
 
 const messagesContainer = ref(null)
 const leftMessagesAreaRef = ref(null)
 const rightContentWrapperRef = ref(null)
 
-const emit = defineEmits(['containerReady', 'leftAreaReady', 'rightAreaReady'])
+const emit = defineEmits(['containerReady', 'leftAreaReady', 'rightAreaReady', 'update:inputMessage'])
+
+// 处理输入消息更新
+const handleInputMessageUpdate = (value) => {
+  emit('update:inputMessage', value)
+}
 
 onMounted(() => {
   if (messagesContainer.value) {

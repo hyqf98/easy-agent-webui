@@ -1,5 +1,6 @@
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
-import {ChatMode, sseChatService} from '@/services/sseService.js'
+import {ChatMode, sseChatService, SseMessageType, ToolStatus} from '@/services/sseService.js'
+import {generateMessageId, generateSessionId, generateRequestId, generateToolId} from '@/utils/idGenerator.js'
 
 // 会话管理
 const conversations = ref([])
@@ -121,11 +122,9 @@ const getModeDescription = (modeId) => {
 }
 
 let messageIdCounter = 0
-let conversationIdCounter = 0
-
-// 创建唯一 ID
-const createId = () => `msg_${++messageIdCounter}`
-const createConversationId = () => `conv_${++conversationIdCounter}`
+// 创建唯一 ID - 使用新的 ID 生成器
+const createId = () => generateMessageId()
+const createConversationId = () => generateSessionId()
 
 // 是否有活跃会话且有消息
 const hasActiveChat = computed(() => !!activeConversationId.value && messages.value.length > 0)
@@ -260,7 +259,15 @@ const toggleThinking = (msgId) => {
 // 滚动到底部
 const scrollToBottom = () => {
   nextTick(() => {
-    if (messagesContainer.value) {
+    // 分栏模式：滚动左侧消息区域
+    if (isSplitLayoutMode.value && leftMessagesAreaRef.value) {
+      leftMessagesAreaRef.value.scrollTop = leftMessagesAreaRef.value.scrollHeight
+      setTimeout(() => {
+        checkLeftScrollPosition()
+      }, 100)
+    }
+    // 普通模式：滚动主消息容器
+    else if (messagesContainer.value) {
       messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
       setTimeout(() => {
         checkScrollPosition()
@@ -318,7 +325,7 @@ const sendMessage = async () => {
   const aiMessage = {
     id: createId(),
     role: 'assistant',
-    content: '',
+    content: '正在研墨思索...',
     thinking: null,
     tools: [],
     isStreaming: true
@@ -328,7 +335,7 @@ const sendMessage = async () => {
   try {
     await streamResponse(content, aiMessage)
   } catch (error) {
-    aiMessage.content = '抱歉，出现了错误。请稍后重试。'
+    aiMessage.content = '抱歉，墨迹未干，请稍后再试'
     aiMessage.isStreaming = false
   } finally {
     isSending.value = false
@@ -339,9 +346,25 @@ const sendMessage = async () => {
 
 // SSE 流式响应处理
 const streamResponse = async (prompt, aiMessage) => {
+  // 生成或获取 sessionId
+  let sessionId = activeConversationId.value
+  if (!sessionId) {
+    sessionId = generateSessionId()
+    // 更新当前会话ID
+    const currentConv = conversations.value.find(c => c.id === activeConversationId.value)
+    if (currentConv) {
+      currentConv.id = sessionId
+      activeConversationId.value = sessionId
+    }
+  }
+
+  // 生成 requestId
+  const requestId = generateRequestId()
+
   const request = {
     userQuery: prompt,
-    sessionId: activeConversationId.value,
+    sessionId: sessionId,
+    requestId: requestId,
     mode: currentChatMode.value === 'chat' ? ChatMode.CHAT :
           currentChatMode.value === 'markdown' ? ChatMode.MARKDOWN :
           currentChatMode.value === 'web' ? ChatMode.HTML :
@@ -353,11 +376,83 @@ const streamResponse = async (prompt, aiMessage) => {
     }).filter(Boolean)
   }
 
-  // 发送请求并返回 reader，由调用者手动处理响应
-  const { reader } = sseChatService.connect(request)
+  // 初始化工具调用映射
+  const toolCallMap = new Map()
 
-  // TODO: 手动补充 SSE 响应消息的处理逻辑
-  // 可以通过 reader.read() 读取流数据
+  // 使用新的 SSE 处理器
+  // 标记是否已接收过真实内容
+  let hasReceivedContent = false
+
+  await sseChatService.connect(request, {
+    // 处理思考消息
+    onThinking: (message) => {
+      if (message.content) {
+        aiMessage.thinking = message.content
+        aiMessage._lastUpdate = Date.now()
+      }
+    },
+
+    // 处理工具调用开始
+    onToolCallStart: (message) => {
+      const toolId = generateToolId()
+      const toolCall = {
+        id: toolId,
+        name: message.toolName || 'Unknown',
+        status: ToolStatus.CALLING,
+        input: message.input || '',
+        output: null
+      }
+      toolCallMap.set(message.toolName, toolId)
+      aiMessage.tools.push(toolCall)
+      aiMessage._lastUpdate = Date.now()
+    },
+
+    // 处理工具调用结果
+    onToolCallResult: (message) => {
+      const toolId = toolCallMap.get(message.toolName)
+      if (toolId) {
+        const tool = aiMessage.tools.find(t => t.id === toolId)
+        if (tool) {
+          tool.status = message.success ? ToolStatus.SUCCESS : ToolStatus.FAILED
+          tool.output = message.result || ''
+        }
+      }
+      aiMessage._lastUpdate = Date.now()
+    },
+
+    // 处理内容块
+    onContentChunk: (message) => {
+      if (message.content) {
+        // 首次接收内容时，清空默认提示
+        if (!hasReceivedContent) {
+          aiMessage.content = ''
+          hasReceivedContent = true
+        }
+        aiMessage.content += message.content
+        aiMessage._lastUpdate = Date.now()
+      }
+    },
+
+    // 处理完成
+    onCompleted: (message) => {
+      aiMessage.isStreaming = false
+      isThinking.value = false
+      aiMessage._lastUpdate = Date.now()
+
+      // 更新会话预览
+      if (aiMessage.content && hasReceivedContent) {
+        updateConversationPreview(aiMessage.content)
+      }
+    },
+
+    // 处理错误
+    onError: (message) => {
+      aiMessage.content = '抱歉，墨迹未干，请稍后再试'
+      aiMessage.isStreaming = false
+      isThinking.value = false
+      aiMessage._lastUpdate = Date.now()
+    }
+  })
 }
 
 // 处理输入事件并动态调整高度
@@ -598,6 +693,7 @@ watch(lastAiContent, () => {
     nextTick(() => {
       if (leftMessagesAreaRef.value) {
         leftMessagesAreaRef.value.scrollTop = leftMessagesAreaRef.value.scrollHeight
+        setTimeout(() => checkLeftScrollPosition(), 100)
       }
     })
   }
@@ -605,10 +701,21 @@ watch(lastAiContent, () => {
 
 // 监听消息列表变化，左侧面板自动滚动到底部
 watch(messages, () => {
+  // 分栏模式：滚动左侧消息区域
   if (isSplitLayoutMode.value && leftMessagesAreaRef.value) {
     nextTick(() => {
       setTimeout(() => {
         leftMessagesAreaRef.value.scrollTop = leftMessagesAreaRef.value.scrollHeight
+        checkLeftScrollPosition()
+      }, 100)
+    })
+  }
+  // 普通模式：滚动主消息容器
+  else if (messagesContainer.value) {
+    nextTick(() => {
+      setTimeout(() => {
+        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+        checkScrollPosition()
       }, 100)
     })
   }

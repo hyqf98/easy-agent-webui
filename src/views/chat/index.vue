@@ -138,25 +138,44 @@ import {
   stopGeneration,
   isFeatureEnabled,
   isModeActive,
+  messagesContainer,
+  leftMessagesAreaRef,
+  rightContentWrapperRef
 } from './AiChatView.js'
 
 // 处理容器引用
 const handleContainerReady = (ref) => {
   // 保存 messagesContainer 引用
-  if (ref && ref.value) {
-    // 这里可以保存引用供 AiChatView.js 使用
+  if (ref) {
+    messagesContainer.value = ref.value
+    // 事件监听器已在组件内部添加，这里不需要重复添加
+    // 只检查滚动位置
+    setTimeout(() => {
+      checkScrollPosition()
+    }, 100)
   }
 }
 
 const handleLeftAreaReady = (ref) => {
-  if (ref && ref.value) {
-    // 保存 leftMessagesAreaRef 引用
+  // 保存 leftMessagesAreaRef 引用
+  if (ref) {
+    leftMessagesAreaRef.value = ref.value
+    // 添加事件监听器
+    if (leftMessagesAreaRef.value && !leftMessagesAreaRef.value.dataset.hasScrollListener) {
+      leftMessagesAreaRef.value.addEventListener('scroll', handleLeftScroll)
+      leftMessagesAreaRef.value.dataset.hasScrollListener = 'true'
+    }
+    // 检查滚动位置
+    setTimeout(() => {
+      checkLeftScrollPosition()
+    }, 100)
   }
 }
 
 const handleRightAreaReady = (ref) => {
-  if (ref && ref.value) {
-    // 保存 rightContentWrapperRef 引用
+  // 保存 rightContentWrapperRef 引用
+  if (ref) {
+    rightContentWrapperRef.value = ref.value
   }
 }
 

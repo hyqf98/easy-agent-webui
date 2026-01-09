@@ -2,13 +2,20 @@
   <div class="chat-content-area welcome-layout">
     <Transition name="welcome-fade">
       <div class="welcome-container">
-        <!-- 上部分：标题和艺术字 -->
+        <!-- 上部分：艺术字 -->
         <div class="welcome-content-top">
           <div class="welcome-ink-art">
-            <div class="ink-circle-large"></div>
+            <!-- 墨迹方框装饰 - 不完全包裹文字 -->
+            <div class="ink-frame-decoration">
+              <div class="ink-corner ink-corner-tl"></div>
+              <div class="ink-corner ink-corner-tr"></div>
+              <div class="ink-corner ink-corner-bl"></div>
+              <div class="ink-corner ink-corner-br"></div>
+              <div class="ink-stroke ink-stroke-top"></div>
+              <div class="ink-stroke ink-stroke-bottom"></div>
+            </div>
             <div class="ink-text-large">灵犀</div>
           </div>
-          <p class="welcome-title">灵犀问答</p>
         </div>
 
         <!-- 输入区域 -->
