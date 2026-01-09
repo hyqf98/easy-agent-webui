@@ -45,7 +45,7 @@
   align-items: center;
   justify-content: center;
   gap: clamp(6px, 0.8vw, 10px);
-  padding: clamp(10px, 1.2vh, 14px) clamp(16px, 2vw, 24px);
+  padding: clamp(5px, 0.6vh, 7px) clamp(8px, 1vw, 12px);
   background: linear-gradient(135deg, var(--accent-赭石) 0%, #8b5a3c 100%);
   border: none;
   color: var(--paper-新);
@@ -95,34 +95,39 @@
 .conversation-item {
   position: relative;
   display: flex;
-  align-items: flex-start;
-  gap: var(--rfs-space-lg);
-  padding: var(--rfs-space-lg) var(--spacing-中);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
   cursor: pointer;
   transition: all 0.25s ease;
   background: transparent;
   user-select: none;
   border: var(--rfs-border-sm) solid transparent;
+  border-radius: 6px;
+  min-height: 44px;
 }
 
 .conversation-item:hover {
   background: var(--ink-晕染-浅);
+  border-radius: 6px;
 }
 
 .conversation-item.active {
   background: var(--ink-晕染-中);
   border-color: var(--ink-清);
+  border-radius: 6px;
 }
 
 .conversation-icon {
-  width: var(--rfs-size-2xl);
-  height: var(--rfs-size-2xl);
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   background: linear-gradient(135deg, #9e8b7a 0%, #8b7a6a 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-墨-浅);
+  border-radius: 4px;
 }
 
 .icon-text {
@@ -135,6 +140,10 @@
 .conversation-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
 }
 
 .conversation-title {
@@ -142,25 +151,26 @@
   font-weight: 600;
   color: var(--ink-焦);
   font-family: var(--font-宋);
-  margin-bottom: var(--rfs-space-xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.3;
 }
 
 .conversation-preview {
-  font-size: var(--rfs-font-sm);
+  font-size: var(--rfs-font-xs);
   color: var(--ink-淡);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-bottom: var(--rfs-space-xs);
+  line-height: 1.2;
 }
 
 .conversation-time {
-  font-size: var(--rfs-font-xs);
+  font-size: 11px;
   color: var(--ink-淡);
-  font-weight: 500;
+  font-weight: 400;
+  opacity: 0.7;
 }
 
 .conversation-item.active .conversation-title {

@@ -42,6 +42,10 @@ const props = defineProps({
   isExpanded: {
     type: Boolean,
     default: false
+  },
+  lastUpdate: {
+    type: Number,
+    default: 0
   }
 })
 

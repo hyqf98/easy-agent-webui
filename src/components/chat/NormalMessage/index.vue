@@ -5,7 +5,7 @@
       <div class="markdown-content" v-html="renderedContent"></div>
 
       <!-- 流式输入时的光标效果 -->
-      <span v-if="isStreaming" class="streaming-cursor"></span>
+      <span v-if="showCursor" class="streaming-cursor"></span>
 
       <!-- 墨滴装饰 -->
       <div class="ink-drip-decoration">
@@ -29,7 +29,7 @@ const props = defineProps({
   }
 })
 
-const { renderedContent } = useNormalMessage(props)
+const { renderedContent, showCursor } = useNormalMessage(props)
 </script>
 
 <style src="./NormalMessage.css"></style>

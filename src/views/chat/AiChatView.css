@@ -393,7 +393,7 @@
   inset: 0;
   overflow-y: auto;
   padding: var(--spacing-宽) 20px;
-  max-height: calc(100% - 180px); /* 初始值，会被 JavaScript 动态调整 */
+  max-height: calc(100%); /* 初始值，会被 JavaScript 动态调整 */
   scrollbar-width: thin;
   scrollbar-color: var(--ink-淡) transparent;
   transition: max-height 0.3s ease;
@@ -1166,8 +1166,6 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: 100%;
-  max-height: 100%;
   width: 100%;
   min-height: 0;
 }
@@ -1175,16 +1173,16 @@
 .messages-container.split-layout .messages-inner {
   display: flex;
   flex-direction: row;
+  flex: 1;
   width: 100%;
-  height: 100%;
   min-height: 0;
 }
 
 /* 分栏布局包装器 */
 .split-layout-wrapper {
   display: flex;
+  flex: 1;
   width: 100%;
-  height: 100%;
   min-height: 0;
   gap: 0;
 }
@@ -1194,7 +1192,7 @@
   width: 40%;
   min-width: 320px;
   max-width: 480px;
-  flex-shrink: 0;
+  flex: 0 0 auto;
   border-right: var(--border-中);
   display: flex;
   flex-direction: column;
@@ -1212,6 +1210,60 @@
   overflow: hidden;
   background: var(--paper-熟);
   min-height: 0;
+}
+
+/* 右侧面板标题栏 */
+.right-panel-header {
+  flex-shrink: 0;
+  padding: var(--spacing-中) var(--spacing-宽);
+  border-bottom: var(--border-细);
+  background: var(--paper-新);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-中);
+  position: relative;
+}
+
+.header-decoration-left,
+.header-decoration-right {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    var(--ink-淡),
+    transparent);
+}
+
+.right-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-焦);
+  font-family: var(--font-宋);
+  margin: 0;
+  letter-spacing: 2px;
+  position: relative;
+  padding: 0 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.right-panel-title::before,
+.right-panel-title::after {
+  content: '✦';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-淡);
+  font-size: 10px;
+}
+
+.right-panel-title::before {
+  left: -8px;
+}
+
+.right-panel-title::after {
+  right: -8px;
 }
 
 /* 左侧消息区域（可滚动） */
@@ -1261,6 +1313,53 @@
   border-top: var(--border-细);
   background: var(--paper-熟);
   padding: var(--spacing-中) var(--spacing-宽);
+  position: relative;
+}
+
+/* 内容生成进度提示（分栏模式左侧） */
+.content-progress-hint {
+  margin-top: var(--spacing-中);
+  padding: var(--spacing-紧) var(--spacing-中);
+  background: var(--ink-晕染-浅);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.content-progress-hint .generating-text {
+  color: var(--accent-赭石);
+  font-weight: 500;
+}
+
+.content-progress-hint .completed-text {
+  color: var(--ink-淡);
+}
+
+.content-progress-hint .content-preview {
+  display: block;
+  margin-top: var(--spacing-紧);
+  color: var(--ink-重);
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 左侧滚动按钮样式 */
+.left-scroll-btn {
+  bottom: calc(100% + 12px);
+  right: var(--spacing-中);
+  left: auto !important;
+  width: 28px;
+  height: 28px;
+  transform: none !important;
+}
+
+.left-scroll-btn:hover {
+  transform: scale(1.08) !important;
+}
+
+.left-scroll-btn:active {
+  transform: scale(0.95) !important;
 }
 
 .input-container-compact {
@@ -1530,7 +1629,6 @@
 .right-content-wrapper {
   flex: 1;
   width: 100%;
-  height: 100%;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1551,7 +1649,6 @@
 /* 渲染内容区域 */
 .render-content-area {
   width: 100%;
-  min-height: 100%;
 }
 
 /* 右侧面板中的消息样式调整 */
@@ -1559,13 +1656,14 @@
   width: 100%;
 }
 
-.split-right-panel .normal-message .message-bubble {
-  background: rgba(255, 255, 255, 0.98);
-  border-radius: 8px;
-  box-shadow: var(--shadow-墨-中);
-  padding: var(--spacing-宽);
-  clip-path: none;
-  border: var(--border-细);
+/* 使用 :deep() 穿透组件 scoped 样式，移除白色背景 */
+.split-right-panel .normal-message :deep(.message-bubble) {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  clip-path: none !important;
+  border: none !important;
 }
 
 .split-right-panel .normal-message .markdown-content {

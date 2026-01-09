@@ -1,4 +1,5 @@
-import {computed, nextTick, onMounted, onUnmounted, ref} from 'vue'
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
+import {ChatMode, sseChatService} from '@/services/sseService.js'
 
 // 会话管理
 const conversations = ref([])
@@ -12,16 +13,22 @@ const isThinking = ref(false)
 const expandedThinking = ref(null)
 const messagesContainer = ref(null)
 const inputRef = ref(null)
+const leftMessagesAreaRef = ref(null)
+const rightContentWrapperRef = ref(null) // 右侧内容区域引用
 
-// 新增：模式和功能状态
-const fileInputRef = ref(null) // 文件上传输入框引用
+// 模式和功能状态
+const fileInputRef = ref(null)
 
 // 侧边栏状态
 const sidebarVisible = ref(true)
 
 // 滚动按钮状态
 const showScrollButton = ref(false)
-const scrollButtonTarget = ref('bottom') // 'top' | 'bottom'
+const scrollButtonTarget = ref('bottom')
+
+// 左侧消息区域滚动按钮状态
+const showLeftScrollButton = ref(false)
+const leftScrollButtonTarget = ref('bottom')
 
 // 切换侧边栏
 const toggleSidebar = () => {
@@ -58,7 +65,7 @@ const chatModes = [
   },
   {
     id: 'markdown',
-    label: 'Markdown格式',
+    label: 'Markdown模式',
     description: 'AI会完成你的任务并以Markdown方式输出结论',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>',
     enabled: true,
@@ -74,7 +81,7 @@ const chatModes = [
   },
   {
     id: 'ppt',
-    label: 'PPT格式',
+    label: 'PPT模式',
     description: 'AI会完成你的任务并以PPT方式输出结论',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
     enabled: true,
@@ -86,7 +93,7 @@ const chatModes = [
 const enabledFeatures = ref([])
 
 // 当前选中的聊天模式（单选）
-const currentChatMode = ref('chat') // 默认选中第一个：智能问答
+const currentChatMode = ref('chat')
 
 // 获取可见的功能按钮
 const visibleFeatureButtons = computed(() => {
@@ -95,11 +102,9 @@ const visibleFeatureButtons = computed(() => {
 
 // 获取可见的聊天模式
 const visibleChatModes = computed(() => {
-  // 如果会话已有消息，只显示当前选中的模式（不允许中途切换）
   if (messages.value.length > 0) {
     return chatModes.filter(mode => mode.id === currentChatMode.value && mode.enabled)
   }
-  // 如果会话没有消息，显示所有可用模式让用户选择
   return chatModes.filter(mode => mode.enabled && mode.visible)
 })
 
@@ -117,17 +122,15 @@ const getModeDescription = (modeId) => {
 
 let messageIdCounter = 0
 let conversationIdCounter = 0
-let eventSource = null
 
 // 创建唯一 ID
 const createId = () => `msg_${++messageIdCounter}`
 const createConversationId = () => `conv_${++conversationIdCounter}`
 
-// 是否有活跃会话且有消息（用于判断是否显示消息区域）
-// 如果选中了会话但没有消息，仍然显示欢迎页面
+// 是否有活跃会话且有消息
 const hasActiveChat = computed(() => !!activeConversationId.value && messages.value.length > 0)
 
-// 是否应该将输入框显示在底部（与 hasActiveChat 一致）
+// 是否应该将输入框显示在底部
 const shouldShowInputAtBottom = computed(() => {
   return hasActiveChat.value
 })
@@ -146,19 +149,13 @@ const inputPlaceholder = computed(() => {
     : '输入消息开始新的对话...'
 })
 
-// 创建新会话（点击按钮时只返回欢迎页面，不创建会话记录）
+// 创建新会话
 const createConversation = () => {
-  // 清除当前选中会话，返回欢迎页面
   activeConversationId.value = null
   messages.value = []
-
-  // 重置模式为智能问答
   currentChatMode.value = 'chat'
-
-  // 清空所有功能按钮的选中状态（深度思考、搜索等）
   enabledFeatures.value = []
 
-  // 聚焦输入框
   nextTick(() => {
     inputRef.value?.focus()
   })
@@ -170,6 +167,9 @@ const selectConversation = (id) => {
   const conv = conversations.value.find(c => c.id === id)
   if (conv) {
     messages.value = conv.messages || []
+    if (conv.mode) {
+      currentChatMode.value = conv.mode
+    }
   }
   nextTick(() => {
     scrollToBottom()
@@ -198,6 +198,15 @@ const renameConversation = (id, newTitle) => {
   }
 }
 
+// 更新会话模式
+const updateConversationMode = (id, mode) => {
+  const conv = conversations.value.find(c => c.id === id)
+  if (conv) {
+    conv.mode = mode
+    conv.updatedAt = Date.now()
+  }
+}
+
 // 清空当前会话
 const clearCurrentConversation = () => {
   if (!activeConversationId.value) return
@@ -211,12 +220,16 @@ const clearCurrentConversation = () => {
 
 // 停止生成
 const stopGeneration = () => {
-  if (eventSource) {
-    eventSource.close()
-    eventSource = null
-  }
+  sseChatService.disconnect()
   isSending.value = false
   isThinking.value = false
+
+  if (messages.value.length > 0) {
+    const lastMessage = messages.value[messages.value.length - 1]
+    if (lastMessage.role === 'assistant' && lastMessage.isStreaming) {
+      lastMessage.isStreaming = false
+    }
+  }
 }
 
 // 更新会话预览
@@ -249,10 +262,18 @@ const scrollToBottom = () => {
   nextTick(() => {
     if (messagesContainer.value) {
       messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-      // 滚动后检查按钮状态
       setTimeout(() => {
         checkScrollPosition()
       }, 100)
+    }
+  })
+}
+
+// 滚动右侧面板到底部（Markdown/网页/PPT模式）
+const scrollRightPanelToBottom = () => {
+  nextTick(() => {
+    if (rightContentWrapperRef.value) {
+      rightContentWrapperRef.value.scrollTop = rightContentWrapperRef.value.scrollHeight
     }
   })
 }
@@ -262,13 +283,13 @@ const sendMessage = async () => {
   const content = inputMessage.value.trim()
   if (!content || isSending.value) return
 
-  // 如果没有活跃会话，先创建实际的会话对象
   if (!hasActiveChat.value) {
     const newConv = {
       id: createConversationId(),
       title: '新对话',
       preview: '',
       messages: [],
+      mode: currentChatMode.value,
       createdAt: Date.now(),
       updatedAt: Date.now()
     }
@@ -276,7 +297,6 @@ const sendMessage = async () => {
     activeConversationId.value = newConv.id
   }
 
-  // 添加用户消息
   const userMessage = {
     id: createId(),
     role: 'user',
@@ -285,7 +305,6 @@ const sendMessage = async () => {
   messages.value.push(userMessage)
   inputMessage.value = ''
 
-  // 重置输入框高度
   if (inputRef.value) {
     inputRef.value.style.height = 'auto'
   }
@@ -293,12 +312,9 @@ const sendMessage = async () => {
   isSending.value = true
   isThinking.value = true
 
-  // 更新会话预览
   updateConversationPreview(content, content)
-
   scrollToBottom()
 
-  // 创建 AI 消息占位
   const aiMessage = {
     id: createId(),
     role: 'assistant',
@@ -310,10 +326,8 @@ const sendMessage = async () => {
   messages.value.push(aiMessage)
 
   try {
-    // 测试消息：模拟流式响应展示各种消息类型
-    await mockStreamResponse(content, aiMessage)
+    await streamResponse(content, aiMessage)
   } catch (error) {
-    console.error('发送消息失败:', error)
     aiMessage.content = '抱歉，出现了错误。请稍后重试。'
     aiMessage.isStreaming = false
   } finally {
@@ -323,186 +337,30 @@ const sendMessage = async () => {
   }
 }
 
-// 模拟流式响应用于测试展示
-const mockStreamResponse = async (prompt, aiMessage) => {
-  return new Promise((resolve) => {
-    let step = 0
-
-    const simulateSteps = async () => {
-      // 步骤1: 添加思考内容
-      if (step === 0) {
-        aiMessage.thinking = `正在分析您的问题："${prompt}"...
-
-我需要：
-1. 理解问题的核心意图
-2. 确定需要使用的工具
-3. 制定合适的解决方案
-
-让我思考一下最佳的处理方式...`
-        scrollToBottom()
-        step++
-        setTimeout(simulateSteps, 800)
-        return
-      }
-
-      // 步骤2: 添加工具调用
-      if (step === 1) {
-        aiMessage.tools.push({
-          id: createId(),
-          name: 'search',
-          status: 'calling',
-          input: { query: prompt },
-          output: null
-        })
-        scrollToBottom()
-        step++
-        setTimeout(simulateSteps, 600)
-        return
-      }
-
-      // 步骤3: 工具调用完成
-      if (step === 2) {
-        aiMessage.tools[0].status = 'completed'
-        aiMessage.tools[0].output = `找到 ${Math.floor(Math.random() * 10 + 5)} 条相关结果`
-        scrollToBottom()
-        step++
-        setTimeout(simulateSteps, 500)
-        return
-      }
-
-      // 步骤4: 添加普通内容（流式）
-      if (step === 3) {
-        const responseText = `根据您的查询，我为您找到了以下信息：
-
-## 主要结论
-
-这是一个测试消息，用于展示 **思考过程**、**工具调用** 和 **普通内容** 的显示效果。
-
-### 功能说明
-
-1. **思考消息** - 可以展开/折叠查看 AI 的思考过程
-2. **工具调用** - 显示工具的执行状态和结果
-3. **普通内容** - 支持 Markdown 格式的回复内容
-
-### 样式特点
-
-- 采用水墨画风格设计
-- 支持代码块、列表、标题等 Markdown 元素
-- 平滑的动画过渡效果
-
-希望这个演示能帮助您了解消息的各种显示样式！`
-
-        // 模拟逐字输出
-        let charIndex = 0
-        const typeChar = () => {
-          if (charIndex < responseText.length) {
-            aiMessage.content += responseText[charIndex]
-            charIndex++
-            scrollToBottom()
-            setTimeout(typeChar, 20) // 每20ms输出一个字符
-          } else {
-            aiMessage.isStreaming = false
-            updateConversationPreview(null, responseText.substring(0, 50) + '...')
-            resolve()
-          }
-        }
-        typeChar()
-        return
-      }
-    }
-
-    simulateSteps()
-  })
-}
-
 // SSE 流式响应处理
 const streamResponse = async (prompt, aiMessage) => {
-  return new Promise((resolve, reject) => {
-    eventSource = new EventSource('/api/chat/sse?prompt=' + encodeURIComponent(prompt))
+  const request = {
+    userQuery: prompt,
+    sessionId: activeConversationId.value,
+    mode: currentChatMode.value === 'chat' ? ChatMode.CHAT :
+          currentChatMode.value === 'markdown' ? ChatMode.MARKDOWN :
+          currentChatMode.value === 'web' ? ChatMode.HTML :
+          currentChatMode.value === 'ppt' ? ChatMode.PPT : ChatMode.CHAT,
+    additionalFeatures: enabledFeatures.value.map(f => {
+      if (f === 'deepThink') return 'deep_thinking'
+      if (f === 'search') return 'deep_search'
+      return null
+    }).filter(Boolean)
+  }
 
-    let currentTool = null
-    let fullContent = ''
+  // 发送请求并返回 reader，由调用者手动处理响应
+  const { reader } = sseChatService.connect(request)
 
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data)
-
-        switch (data.type) {
-          case 'thinking':
-            if (!aiMessage.thinking) {
-              aiMessage.thinking = ''
-            }
-            aiMessage.thinking += data.content || ''
-            scrollToBottom()
-            break
-
-          case 'content':
-            aiMessage.content += data.content || ''
-            fullContent = aiMessage.content
-            scrollToBottom()
-            break
-
-          case 'tool_start':
-            currentTool = {
-              id: createId(),
-              name: data.name,
-              status: 'calling',
-              input: data.input,
-              output: null
-            }
-            aiMessage.tools.push(currentTool)
-            scrollToBottom()
-            break
-
-          case 'tool_end':
-            if (currentTool) {
-              currentTool.status = 'completed'
-              currentTool.output = data.output
-            }
-            scrollToBottom()
-            break
-
-          case 'done':
-            aiMessage.isStreaming = false
-            eventSource.close()
-            // 更新会话预览
-            if (fullContent) {
-              updateConversationPreview(null, fullContent.substring(0, 50) + '...')
-            }
-            resolve()
-            break
-
-          case 'error':
-            aiMessage.content += '\n\n错误: ' + (data.error || '未知错误')
-            aiMessage.isStreaming = false
-            eventSource.close()
-            reject(new Error(data.error))
-            break
-        }
-      } catch (e) {
-        console.error('解析 SSE 数据失败:', e)
-      }
-    }
-
-    eventSource.onerror = (error) => {
-      console.error('SSE 连接错误:', error)
-      eventSource.close()
-      aiMessage.isStreaming = false
-      reject(error)
-    }
-
-    // 超时处理
-    setTimeout(() => {
-      if (eventSource.readyState !== EventSource.CLOSED) {
-        eventSource.close()
-        aiMessage.isStreaming = false
-        reject(new Error('请求超时'))
-      }
-    }, 60000)
-  })
+  // TODO: 手动补充 SSE 响应消息的处理逻辑
+  // 可以通过 reader.read() 读取流数据
 }
 
-// 处理输入事件并动态调整高度（最多6行）
+// 处理输入事件并动态调整高度
 const handleInput = () => {
   adjustTextareaHeight()
 }
@@ -512,28 +370,16 @@ const adjustTextareaHeight = () => {
   if (inputRef.value) {
     const textarea = inputRef.value
 
-    // 使用 requestAnimationFrame 确保在正确的时机计算高度
     requestAnimationFrame(() => {
-      // 临时重置高度以获取正确的 scrollHeight
       textarea.style.height = 'auto'
-
-      // 强制浏览器重新计算布局
       textarea.scrollHeight
 
-      // 计算行高：28px 是单行高度（包含行间距）
       const lineHeight = 28
-      const maxHeight = lineHeight * 6 // 6行最大高度
-
-      // 获取实际内容高度
+      const maxHeight = lineHeight * 6
       const scrollHeight = textarea.scrollHeight
-
-      // 计算目标高度（至少 1 行，最多 6 行）
       let targetHeight = Math.max(lineHeight, Math.min(scrollHeight, maxHeight))
 
-      // 设置新高度
       textarea.style.height = targetHeight + 'px'
-
-      // 调整消息容器高度
       adjustMessagesContainerHeight()
     })
   }
@@ -541,19 +387,23 @@ const adjustTextareaHeight = () => {
 
 // 动态调整消息容器高度
 const adjustMessagesContainerHeight = () => {
-  if (!messagesContainer.value || !inputRef.value) return
+  if (!messagesContainer.value) return
+
+  if (isSplitLayoutMode.value) {
+    messagesContainer.value.style.maxHeight = ''
+    messagesContainer.value.style.height = ''
+    return
+  }
+
+  if (!inputRef.value) return
 
   const textarea = inputRef.value
   const textareaHeight = textarea.offsetHeight || textarea.scrollHeight
-  const inputAreaHeight = 80 // 输入框基础高度（发送按钮 + 工具栏 + 边距）
+  const inputAreaHeight = 80
+  const reservedSpace = textareaHeight + inputAreaHeight + 40
 
-  // 计算消息容器需要预留的空间
-  const reservedSpace = textareaHeight + inputAreaHeight + 40 // 额外空间
-
-  // 更新消息容器的最大高度
   messagesContainer.value.style.maxHeight = 'calc(100% - ' + reservedSpace + 'px)'
 
-  // 调整高度后重新检查滚动位置
   nextTick(() => {
     checkScrollPosition()
   })
@@ -563,15 +413,22 @@ const adjustMessagesContainerHeight = () => {
 const toggleFeature = (featureId) => {
   const index = enabledFeatures.value.indexOf(featureId)
   if (index > -1) {
-    enabledFeatures.value.splice(index, 1) // 取消选中
+    enabledFeatures.value.splice(index, 1)
   } else {
-    enabledFeatures.value.push(featureId) // 添加选中
+    enabledFeatures.value.push(featureId)
   }
 }
 
 // 切换聊天模式（单选）
 const switchChatMode = (modeId) => {
   currentChatMode.value = modeId
+  if (activeConversationId.value) {
+    updateConversationMode(activeConversationId.value, modeId)
+  }
+  // 切换模式后重新调整容器高度
+  nextTick(() => {
+    adjustMessagesContainerHeight()
+  })
 }
 
 // 判断功能是否启用
@@ -584,19 +441,18 @@ const isModeActive = (modeId) => {
   return currentChatMode.value === modeId
 }
 
-// 判断是否使用分栏布局（markdown、网页模式、PPT格式 + 已有消息）
+// 判断是否使用分栏布局
 const isSplitLayoutMode = computed(() => {
-  // 只有在已有消息且模式为分栏模式时才使用分栏布局
   return messages.value.length > 0 && ['markdown', 'web', 'ppt'].includes(currentChatMode.value)
 })
 
-// 获取最后一条 AI 消息的内容（用于分栏布局右侧渲染）
+// 获取最后一条 AI 消息的内容
 const lastAiContent = computed(() => {
   const aiMessages = messages.value.filter(m => m.role === 'assistant' && m.content)
   return aiMessages.length > 0 ? aiMessages[aiMessages.length - 1].content : ''
 })
 
-// 获取最后一条 AI 消息对象（用于分栏布局右侧渲染）
+// 获取最后一条 AI 消息对象
 const lastAiMessage = computed(() => {
   const aiMessages = messages.value.filter(m => m.role === 'assistant' && m.content)
   return aiMessages.length > 0 ? aiMessages[aiMessages.length - 1] : null
@@ -604,7 +460,6 @@ const lastAiMessage = computed(() => {
 
 // 处理附件上传
 const handleAttachment = () => {
-  // 创建一个隐藏的文件输入框
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = 'image/*,.pdf,.doc,.docx,.txt'
@@ -612,7 +467,6 @@ const handleAttachment = () => {
   input.onchange = (e) => {
     const files = e.target.files
     if (files && files.length > 0) {
-      console.log('选择的文件:', files)
       // TODO: 实现文件上传逻辑
     }
   }
@@ -626,7 +480,6 @@ const scrollToTop = () => {
       top: 0,
       behavior: 'smooth'
     })
-    // 滚动后检查按钮状态
     setTimeout(() => checkScrollPosition(), 400)
   }
 }
@@ -638,7 +491,6 @@ const scrollToBottomSmooth = () => {
       top: messagesContainer.value.scrollHeight,
       behavior: 'smooth'
     })
-    // 滚动后检查按钮状态
     setTimeout(() => checkScrollPosition(), 400)
   }
 }
@@ -652,6 +504,24 @@ const handleScrollButtonClick = () => {
   }
 }
 
+// 处理左侧滚动按钮点击
+const handleLeftScrollButtonClick = () => {
+  if (!leftMessagesAreaRef.value) return
+
+  if (leftScrollButtonTarget.value === 'bottom') {
+    leftMessagesAreaRef.value.scrollTo({
+      top: leftMessagesAreaRef.value.scrollHeight,
+      behavior: 'smooth'
+    })
+  } else {
+    leftMessagesAreaRef.value.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+  setTimeout(() => checkLeftScrollPosition(), 400)
+}
+
 // 检测滚动位置并更新按钮状态
 const checkScrollPosition = () => {
   if (!messagesContainer.value) return
@@ -661,35 +531,52 @@ const checkScrollPosition = () => {
   const scrollHeight = container.scrollHeight
   const clientHeight = container.clientHeight
 
-  // 计算距离底部的距离
   const distanceToBottom = scrollHeight - scrollTop - clientHeight
   const distanceToTop = scrollTop
-
-  // 判断是否有可滚动内容（内容超出容器高度）
   const hasScrollableContent = scrollHeight > clientHeight + 10
 
-  // 没有可滚动内容时隐藏按钮
   if (!hasScrollableContent) {
     showScrollButton.value = false
     return
   }
 
-  // 只要有可滚动内容，就显示按钮
   showScrollButton.value = true
 
-  // 根据当前位置决定箭头方向
-  // 如果在顶部（距顶部小于50px），显示向下箭头（回到底部）
-  // 如果在底部（距底部小于50px），显示向上箭头（回到顶部）
-  // 否则根据位置判断
   if (distanceToTop < 50) {
-    // 在顶部附近，显示向下箭头
     scrollButtonTarget.value = 'bottom'
   } else if (distanceToBottom < 50) {
-    // 在底部附近，显示向上箭头
     scrollButtonTarget.value = 'top'
   } else {
-    // 在中间位置，根据距离判断
     scrollButtonTarget.value = distanceToTop > distanceToBottom ? 'bottom' : 'top'
+  }
+}
+
+// 检测左侧消息区域滚动位置并更新按钮状态
+const checkLeftScrollPosition = () => {
+  if (!leftMessagesAreaRef.value) return
+
+  const container = leftMessagesAreaRef.value
+  const scrollTop = container.scrollTop
+  const scrollHeight = container.scrollHeight
+  const clientHeight = container.clientHeight
+
+  const distanceToBottom = scrollHeight - scrollTop - clientHeight
+  const distanceToTop = scrollTop
+  const hasScrollableContent = scrollHeight > clientHeight + 1
+
+  if (!hasScrollableContent) {
+    showLeftScrollButton.value = false
+    return
+  }
+
+  showLeftScrollButton.value = true
+
+  if (distanceToTop < 50) {
+    leftScrollButtonTarget.value = 'bottom'
+  } else if (distanceToBottom < 50) {
+    leftScrollButtonTarget.value = 'top'
+  } else {
+    leftScrollButtonTarget.value = distanceToTop > distanceToBottom ? 'bottom' : 'top'
   }
 }
 
@@ -698,29 +585,80 @@ const handleScroll = () => {
   checkScrollPosition()
 }
 
+// 左侧消息区域滚动事件处理
+const handleLeftScroll = () => {
+  checkLeftScrollPosition()
+}
+
+// 监听右侧内容变化，自动滚动到底部（Markdown/网页/PPT模式）
+watch(lastAiContent, () => {
+  if (isSplitLayoutMode.value) {
+    scrollRightPanelToBottom()
+    // 左侧消息列表也滚动到底部
+    nextTick(() => {
+      if (leftMessagesAreaRef.value) {
+        leftMessagesAreaRef.value.scrollTop = leftMessagesAreaRef.value.scrollHeight
+      }
+    })
+  }
+})
+
+// 监听消息列表变化，左侧面板自动滚动到底部
+watch(messages, () => {
+  if (isSplitLayoutMode.value && leftMessagesAreaRef.value) {
+    nextTick(() => {
+      setTimeout(() => {
+        leftMessagesAreaRef.value.scrollTop = leftMessagesAreaRef.value.scrollHeight
+      }, 100)
+    })
+  }
+}, { deep: true })
+
+// 监听模式切换，滚动右侧面板到底部
+watch(isSplitLayoutMode, (isSplit) => {
+  if (isSplit) {
+    nextTick(() => {
+      scrollRightPanelToBottom()
+      // 左侧消息列表滚动到底部
+      if (leftMessagesAreaRef.value) {
+        setTimeout(() => {
+          leftMessagesAreaRef.value.scrollTop = leftMessagesAreaRef.value.scrollHeight
+        }, 100)
+      }
+    })
+  }
+})
+
 onMounted(() => {
-  // 初始化时聚焦输入框
   inputRef.value?.focus()
-  // 初始化输入框高度
   adjustTextareaHeight()
-  // 添加滚动监听器
+
   nextTick(() => {
     if (messagesContainer.value) {
       messagesContainer.value.addEventListener('scroll', handleScroll)
       checkScrollPosition()
     }
-    // 初始化消息容器高度
+
+    if (leftMessagesAreaRef.value && isSplitLayoutMode.value) {
+      leftMessagesAreaRef.value.addEventListener('scroll', handleLeftScroll)
+      leftMessagesAreaRef.value.dataset.hasScrollListener = 'true'
+      setTimeout(() => checkLeftScrollPosition(), 100)
+    }
+
     adjustMessagesContainerHeight()
   })
 })
 
 onUnmounted(() => {
-  if (eventSource) {
-    eventSource.close()
-  }
-  // 移除滚动监听器
+  sseChatService.disconnect()
+
   if (messagesContainer.value) {
     messagesContainer.value.removeEventListener('scroll', handleScroll)
+  }
+
+  if (leftMessagesAreaRef.value) {
+    leftMessagesAreaRef.value.removeEventListener('scroll', handleLeftScroll)
+    delete leftMessagesAreaRef.value.dataset.hasScrollListener
   }
 })
 
@@ -767,7 +705,16 @@ export {
   sendMessage,
   handleInput,
   handleAttachment,
+  checkScrollPosition,
+  checkLeftScrollPosition,
+  handleScroll,
+  handleLeftScroll,
   showScrollButton,
   scrollButtonTarget,
-  handleScrollButtonClick
+  handleScrollButtonClick,
+  leftMessagesAreaRef,
+  showLeftScrollButton,
+  leftScrollButtonTarget,
+  handleLeftScrollButtonClick,
+  rightContentWrapperRef
 }

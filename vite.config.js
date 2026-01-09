@@ -35,11 +35,13 @@ export default defineConfig({
   },
   server: {
     host: true,
-    port: 5173,
+    port: 10000,
     proxy: {
       '/api': {
-        target: 'http://localhost:9000',
+        target: 'http://localhost:20000',
         changeOrigin: true,
+        // SSE 需要特殊处理
+        ws: true,
       },
     },
   },

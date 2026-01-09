@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { marked } from 'marked'
 import hljs from 'highlight.js'
 
@@ -43,7 +43,13 @@ export function useNormalMessage(props) {
     return html
   })
 
+  // 流式输出相关的计算属性
+  const showCursor = computed(() => {
+    return props.isStreaming && props.content && props.content.length > 0
+  })
+
   return {
-    renderedContent
+    renderedContent,
+    showCursor
   }
 }
