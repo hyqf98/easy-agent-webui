@@ -639,3 +639,43 @@
   box-shadow: 0 4px 8px rgba(200, 50, 50, 0.3);
   background: #b32a2a;
 }
+
+/* ==================== 设置按钮 ==================== */
+
+.list-footer {
+  padding: 16px;
+  border-top: 1px solid #e5e0d8;
+  background: #ffffff;
+}
+
+.settings-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #f5f0e8;
+  border: 1px solid #e5e0d8;
+  border-radius: 8px;
+  color: #3d3530;
+  font-size: 14px;
+  font-family: var(--font-楷);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.settings-btn:hover {
+  background: #e8e0d5;
+  border-color: #c9966a;
+  color: #c9966a;
+}
+
+.settings-btn:active {
+  transform: scale(0.98);
+}

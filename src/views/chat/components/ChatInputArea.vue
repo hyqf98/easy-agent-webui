@@ -194,8 +194,6 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-
 const emit = defineEmits(['update:inputMessage'])
 
 const props = defineProps({

@@ -165,7 +165,6 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import ThinkingMessage from '@/components/chat/ThinkingMessage/index.vue'
 import NormalMessage from '@/components/chat/NormalMessage/index.vue'
 import ToolMessage from '@/components/chat/ToolMessage/index.vue'

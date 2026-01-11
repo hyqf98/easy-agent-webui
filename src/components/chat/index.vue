@@ -89,6 +89,18 @@
       </Transition>
     </div>
 
+    <!-- 设置按钮 -->
+    <div class="list-footer">
+      <button class="settings-btn" @click="$emit('openSettings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v6m0 6v6"/>
+          <path d="M1 12h6m6 0h6"/>
+        </svg>
+        <span>设置</span>
+      </button>
+    </div>
+
     <!-- 右键菜单 -->
     <Teleport to="body">
       <Transition name="context-menu-fade">
@@ -195,7 +207,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { useConversationList, getIconText, formatTime } from '@/components/chat/ConversationList.js'
 
 const props = defineProps({
@@ -209,7 +220,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['createChat', 'selectChat', 'deleteChat', 'renameChat'])
+const emit = defineEmits(['createChat', 'selectChat', 'deleteChat', 'renameChat', 'openSettings'])
 
 const {
   contextMenuVisible,

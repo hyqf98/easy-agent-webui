@@ -1,5 +1,3 @@
-import { computed, ref, watch, watchEffect } from 'vue'
-
 export function useThinkingMessage(props, emit) {
   // 使用本地 ref 来存储内容，确保实时更新
   const localContent = ref(props.content || '')

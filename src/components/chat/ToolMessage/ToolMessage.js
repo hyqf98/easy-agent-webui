@@ -1,5 +1,3 @@
-import { computed, ref } from 'vue'
-
 export function useToolMessage(props) {
   const isExpanded = ref(false)
 

@@ -1,6 +1,9 @@
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
 import {ChatMode, sseChatService, SseMessageType, ToolStatus} from '@/services/sseService.js'
 import {generateMessageId, generateSessionId, generateRequestId, generateToolId} from '@/utils/idGenerator.js'
+import { useSettings } from '@/composables/useSettings.js'
+
+// 获取设置相关的状态
+const { selectedModel, currentModelInfo } = useSettings()
 
 // 会话管理
 const conversations = ref([])
@@ -373,7 +376,10 @@ const streamResponse = async (prompt, aiMessage) => {
       if (f === 'deepThink') return 'deep_thinking'
       if (f === 'search') return 'deep_search'
       return null
-    }).filter(Boolean)
+    }).filter(Boolean),
+    // 模型配置
+    modelProvider: selectedModel.value.providerId,
+    modelId: selectedModel.value.modelId
   }
 
   // 初始化工具调用映射
@@ -823,5 +829,8 @@ export {
   showLeftScrollButton,
   leftScrollButtonTarget,
   handleLeftScrollButtonClick,
-  rightContentWrapperRef
+  rightContentWrapperRef,
+  // 模型相关状态
+  selectedModel,
+  currentModelInfo
 }

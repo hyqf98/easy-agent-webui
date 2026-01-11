@@ -1,5 +1,3 @@
-import { computed } from 'vue'
-
 /**
  * NormalMessage 组件逻辑
  * 使用 Element Plus X 的 XMarkdown 进行渲染

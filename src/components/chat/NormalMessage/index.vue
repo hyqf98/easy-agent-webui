@@ -33,7 +33,6 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { XMarkdown, Typewriter } from 'vue-element-plus-x'
 
 const props = defineProps({

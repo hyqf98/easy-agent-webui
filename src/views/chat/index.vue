@@ -23,6 +23,7 @@
               @selectChat="selectConversation"
               @deleteChat="deleteConversation"
               @renameChat="renameConversation"
+              @openSettings="handleOpenSettings"
             />
           </div>
         </Transition>
@@ -32,6 +33,8 @@
       <main class="chat-main" :class="{ 'has-active-chat': hasActiveChat, 'expanded': !sidebarVisible }">
         <!-- 顶部标题 -->
         <header class="chat-header">
+          <!-- 模型切换器 -->
+          <ModelSwitcher />
           <button class="sidebar-toggle" @click="toggleSidebar" :title="sidebarVisible ? '收起侧边栏' : '展开侧边栏'">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="3" y1="12" x2="21" y2="12"/>
@@ -82,15 +85,20 @@
         />
       </main>
     </div>
+
+    <!-- 设置弹窗 -->
+    <SettingsDialog />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import ConversationList from '@/components/chat/index.vue'
 import ChatWelcomeView from './components/ChatWelcomeView.vue'
 import ChatNormalView from './components/ChatNormalView.vue'
 import ChatSplitView from './components/ChatSplitView.vue'
+import ModelSwitcher from '@/components/ModelSwitcher.vue'
+import SettingsDialog from '@/components/settings/SettingsDialog.vue'
+import { useSettings } from '@/composables/useSettings'
 
 // 导入所有状态和函数
 import {
@@ -140,8 +148,19 @@ import {
   isModeActive,
   messagesContainer,
   leftMessagesAreaRef,
-  rightContentWrapperRef
+  rightContentWrapperRef,
+  // 模型相关状态
+  selectedModel,
+  currentModelInfo
 } from './AiChatView.js'
+
+// 获取设置相关的函数
+const { openSettingsDialog } = useSettings()
+
+// 打开设置的处理函数
+const handleOpenSettings = () => {
+  openSettingsDialog()
+}
 
 // 处理容器引用
 const handleContainerReady = (ref) => {
