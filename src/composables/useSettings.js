@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { getConfig, saveConfig, testModel, getProviders } from '@/api/settings'
 
 // ==================== 状态定义 ====================
@@ -85,7 +86,14 @@ async function loadConfig() {
     selectedModel.value = data.selectedModel || { providerId: null, modelId: null }
   } catch (error) {
     console.error('加载配置失败:', error)
-    ElMessage.error('加载配置失败')
+    // 安全地显示错误消息
+    try {
+      if (typeof ElMessage !== 'undefined' && ElMessage.error) {
+        ElMessage.error('加载配置失败')
+      }
+    } catch (e) {
+      console.warn('无法显示错误消息:', e)
+    }
   } finally {
     isLoading.value = false
   }
@@ -100,6 +108,7 @@ async function loadProviders() {
     availableProviders.value = data || []
   } catch (error) {
     console.error('加载提供商列表失败:', error)
+    // 静默失败，不显示消息
   }
 }
 
@@ -266,9 +275,10 @@ function selectModel(providerId, modelId) {
  * 打开设置弹窗
  */
 function openSettingsDialog() {
+  console.log('openSettingsDialog 被调用, 当前值:', settingsDialogVisible.value)
   settingsDialogVisible.value = true
-  loadConfig()
-  loadProviders()
+  console.log('openSettingsDialog 执行后, 新值:', settingsDialogVisible.value)
+  // 不在打开时立即加载，让各个组件自己按需加载
 }
 
 /**

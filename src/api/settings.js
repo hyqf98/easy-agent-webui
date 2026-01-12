@@ -53,3 +53,33 @@ export function getProviders() {
     method: 'get'
   })
 }
+
+/**
+ * 测试 MCP 服务器连接
+ * @param {Object} data - 测试数据
+ * @param {string} data.url - 服务器 URL
+ * @param {string} data.transportMode - 传输模式 (sse/http_stream)
+ * @returns {Promise<Object>} 测试结果，包含 serverInfo
+ */
+export function testMcpServer(data) {
+  return request({
+    url: '/settings/test-mcp',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 获取 MCP 服务器详细信息
+ * @param {Object} params - 查询参数
+ * @param {string} params.serverUrl - 服务器 URL
+ * @param {string} params.transportMode - 传输模式
+ * @returns {Promise<Object>} 服务器信息
+ */
+export function getMcpServerInfo(params) {
+  return request({
+    url: '/settings/mcp-info',
+    method: 'get',
+    params
+  })
+}

@@ -71,6 +71,8 @@ const {
 
 const activeTab = ref('mcp')
 
+console.log('SettingsDialog 初始化, visible:', visible.value)
+
 const handleClose = () => {
   closeSettingsDialog()
 }
