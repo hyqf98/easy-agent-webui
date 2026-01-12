@@ -82,7 +82,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
 import { useSettings } from '@/composables/useSettings'
 
 const {

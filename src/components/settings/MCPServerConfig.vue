@@ -237,8 +237,6 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
 import { useSettings } from '@/composables/useSettings'
 import { testMcpServer } from '@/api/settings'
 

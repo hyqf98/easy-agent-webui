@@ -57,7 +57,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { useSettings } from '@/composables/useSettings'
 import MCPServerConfig from './MCPServerConfig.vue'
 import ModelProviderConfig from './ModelProviderConfig.vue'
