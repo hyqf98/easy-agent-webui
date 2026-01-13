@@ -1,6 +1,6 @@
-import { ref, computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { getConfig, saveConfig, testModel, getProviders } from '@/api/settings'
+import {computed, ref} from 'vue'
+import {ElMessage} from 'element-plus'
+import {getConfig, getProviders, saveConfig, testModel} from '@/api/settings'
 
 // ==================== 状态定义 ====================
 
@@ -275,10 +275,7 @@ function selectModel(providerId, modelId) {
  * 打开设置弹窗
  */
 function openSettingsDialog() {
-  console.log('openSettingsDialog 被调用, 当前值:', settingsDialogVisible.value)
   settingsDialogVisible.value = true
-  console.log('openSettingsDialog 执行后, 新值:', settingsDialogVisible.value)
-  // 不在打开时立即加载，让各个组件自己按需加载
 }
 
 /**
