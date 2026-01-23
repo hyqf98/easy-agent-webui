@@ -4,11 +4,18 @@
  */
 export const SseMessageType = {
   THINKING: 'thinking',
+  TOOL_THROUGH: 'tool_through',
   TOOL_CALL_START: 'tool_call_start',
   TOOL_CALL_RESULT: 'tool_call_result',
-  CONTENT_CHUNK: 'final_answer',
+  CONTENT_CHUNK: 'content_chunk',
   COMPLETED: 'completed',
-  ERROR: 'error'
+  ERROR: 'error',
+  // 新增类型
+  PLAN_RESULT: 'plan_result',
+  FILE_CREATED: 'file_created',
+  // 注意：AGENT_SWITCH 和 REVIEW_RESULT 已移除
+  // AGENT_SWITCH: 'agent_switch',  // 已移除
+  // REVIEW_RESULT: 'review_result'  // 已移除
 }
 
 /**
@@ -134,6 +141,7 @@ export class SseChatService {
    * @param {string} [request.userPrompt] 自定义提示词
    * @param {Object} handlers 消息处理器
    * @param {Function} [handlers.onThinking] 思考消息处理
+   * @param {Function} [handlers.onPlanResult] 规划结果处理
    * @param {Function} [handlers.onToolCallStart] 工具调用开始处理
    * @param {Function} [handlers.onToolCallResult] 工具调用结果处理
    * @param {Function} [handlers.onContentChunk] 内容块处理
@@ -173,8 +181,18 @@ export class SseChatService {
       await readSSEStream(this.reader, (message) => {
         switch (message.type) {
           case SseMessageType.THINKING:
+          case SseMessageType.TOOL_THROUGH:
             handlers.onThinking?.(message)
             break
+
+          case SseMessageType.PLAN_RESULT:
+            handlers.onPlanResult?.(message)
+            break
+
+          // 移除的消息类型不再处理
+          // case SseMessageType.AGENT_SWITCH:
+          // case SseMessageType.FILE_CREATED:
+          // case SseMessageType.REVIEW_RESULT:
 
           case SseMessageType.TOOL_CALL_START:
             handlers.onToolCallStart?.(message)
@@ -185,6 +203,7 @@ export class SseChatService {
             break
 
           case SseMessageType.CONTENT_CHUNK:
+          case 'final_answer': // 兼容旧版本
             handlers.onContentChunk?.(message)
             break
 

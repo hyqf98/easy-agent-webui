@@ -1,10 +1,20 @@
+/**
+ * ThinkingMessage 样式
+ * 使用新的设计 Token 系统
+ */
+
 .thinking-message {
-  background: var(--ink-晕染-浅);
-  border: var(--rfs-border-md) dashed rgba(26, 26, 26, 0.2);
+  --thinking-bg: #f5f3ff;
+  --thinking-border: #ddd6fe;
+  --thinking-color: #6366f1;
+
+  background: var(--thinking-bg);
+  border: 1px dashed var(--thinking-border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all var(--transition-base);
   position: relative;
-  margin: var(--spacing-紧) 0;
+  margin-bottom: var(--spacing-md);
 }
 
 .thinking-message::before {
@@ -12,39 +22,37 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: var(--rfs-border-lg);
+  width: 4px;
   height: 100%;
-  background: var(--accent-赭石);
+  background: var(--thinking-color);
 }
 
 .thinking-message.expanded {
   border-style: solid;
-  border-color: rgba(26, 26, 26, 0.2);
-  box-shadow: var(--shadow-墨-中);
+  box-shadow: var(--shadow-sm);
 }
 
 /* 头部 */
 .thinking-header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-紧);
-  padding: var(--rfs-space-xl) var(--rfs-space-lg);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
   cursor: pointer;
   user-select: none;
-  transition: background 0.2s ease;
-  position: relative;
+  transition: background var(--transition-fast);
 }
 
 .thinking-header:hover {
-  background: var(--ink-晕染-中);
+  background: rgba(99, 102, 241, 0.05);
 }
 
 .thinking-icon {
-  width: var(--rfs-size-sm);
-  height: var(--rfs-size-sm);
-  color: var(--ink-焦);
-  opacity: 0.4;
-  animation: thinkRotate 4s linear infinite;
+  width: 20px;
+  height: 20px;
+  color: var(--thinking-color);
+  opacity: 0.7;
+  flex-shrink: 0;
 }
 
 .thinking-icon svg {
@@ -52,24 +60,18 @@
   height: 100%;
 }
 
-@keyframes thinkRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 .thinking-label {
-  font-size: var(--rfs-font-base);
-  color: var(--ink-重);
-  font-weight: 500;
-  letter-spacing: var(--rfs-border-sm);
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
 }
 
 .expand-indicator {
-  margin-left: auto;
-  width: var(--rfs-icon-md);
-  height: var(--rfs-icon-md);
-  color: var(--ink-淡);
-  transition: transform 0.3s ease;
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-tertiary);
+  transition: transform var(--transition-base);
 }
 
 .expand-indicator.rotated {
@@ -81,10 +83,10 @@
   height: 100%;
 }
 
-/* 内容区域 */
+/* 内容区域展开动画 */
 .thinking-expand-enter-active,
 .thinking-expand-leave-active {
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all var(--transition-base);
   overflow: hidden;
 }
 
@@ -92,105 +94,74 @@
 .thinking-expand-leave-to {
   max-height: 0;
   opacity: 0;
-  margin-top: 0;
 }
 
 .thinking-expand-enter-to,
 .thinking-expand-leave-from {
-  max-height: var(--rfs-size-2xl);
+  max-height: 400px;
   opacity: 1;
-  margin-top: var(--spacing-紧);
 }
 
 .thinking-content {
-  border-top: var(--border-细);
+  border-top: 1px solid var(--thinking-border);
 }
 
 .thinking-inner {
-  position: relative;
-  padding: var(--rfs-space-2xl) var(--spacing-宽);
-  background: var(--ink-晕染-浅);
-}
-
-.thinking-border-decoration {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: var(--rfs-size-xl);
-  height: var(--rfs-size-xl);
-  opacity: 0.05;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cpath d='M0,60 L60,60 L60,0' fill='none' stroke='%231a1a1a' stroke-width='1'/%3E%3C/svg%3E") no-repeat top right;
+  padding: var(--spacing-md);
+  background: #ffffff;
 }
 
 .thinking-text {
-  position: relative;
-  z-index: 1;
-  font-size: var(--rfs-font-md);
-  line-height: 1.8;
-  color: var(--ink-重);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-primary);
 }
 
 .thinking-line {
   margin: 0;
-  padding: var(--rfs-space-xs) 0;
+  padding: var(--spacing-xs) 0;
   position: relative;
-  padding-left: var(--rfs-space-lg);
+  padding-left: var(--spacing-md);
 }
 
 .thinking-line::before {
   content: '·';
   position: absolute;
   left: 0;
-  color: var(--ink-淡);
+  color: var(--color-text-tertiary);
 }
 
 .thinking-line .keyword {
-  color: var(--ink-焦);
-  font-weight: 600;
+  color: var(--thinking-color);
+  font-weight: var(--font-weight-semibold);
 }
 
 .thinking-line .quote {
-  color: var(--ink-重);
+  color: var(--color-text-secondary);
   font-style: italic;
 }
 
-/* 墨滴装饰 */
-.thinking-ink-drips {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--rfs-space-xl);
-  overflow: hidden;
-  pointer-events: none;
+/* 加载状态 - 思考图标旋转 */
+.thinking-icon svg {
+  animation: thinkRotate 4s linear infinite;
 }
 
-.drip {
-  position: absolute;
-  bottom: calc(-1 * var(--rfs-space-md));
-  width: var(--rfs-space-3xl);
-  height: var(--rfs-space-3xl);
-  background: radial-gradient(ellipse, rgba(26, 26, 26, 0.06) 0%, transparent 70%);
-  filter: blur(var(--rfs-space-sm));
-}
-
-.drip-1 {
-  left: 20%;
-  animation: dripFall 3s ease-in-out infinite;
-}
-
-.drip-2 {
-  left: 70%;
-  animation: dripFall 3s ease-in-out infinite 1.5s;
-}
-
-@keyframes dripFall {
-  0%, 100% {
-    opacity: 0;
-    transform: translateY(calc(-1 * var(--rfs-space-md)));
+@keyframes thinkRotate {
+  from {
+    transform: rotate(0deg);
   }
-  50% {
-    opacity: 1;
-    transform: translateY(0);
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .thinking-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .thinking-inner {
+    padding: var(--spacing-sm) var(--spacing-md);
   }
 }

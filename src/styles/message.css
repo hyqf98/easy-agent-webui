@@ -1,0 +1,241 @@
+/**
+ * 消息组件通用样式
+ *
+ * 定义所有消息组件的基础样式和动画
+ */
+
+/* === 消息容器基础样式 === */
+.message {
+  --message-bg: var(--color-bg-secondary);
+  --message-border: var(--color-border-primary);
+  --message-radius: var(--radius-lg);
+  --message-padding: var(--spacing-md);
+
+  background: var(--message-bg);
+  border: 1px solid var(--message-border);
+  border-radius: var(--message-radius);
+  padding: var(--message-padding);
+  margin-bottom: var(--spacing-md);
+  transition: all var(--transition-base);
+}
+
+.message:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+/* === 消息头部 === */
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.message-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.message-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.message-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-50);
+  color: var(--color-primary-600);
+}
+
+/* === 消息内容 === */
+.message-content {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-primary);
+}
+
+.message-content pre {
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  overflow-x: auto;
+  margin: var(--spacing-sm) 0;
+}
+
+.message-content code {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  background: var(--color-bg-tertiary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+/* === 消息展开/折叠 === */
+.message-expand-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  user-select: none;
+  padding: var(--spacing-xs) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  transition: color var(--transition-fast);
+}
+
+.message-expand-trigger:hover {
+  color: var(--color-primary);
+}
+
+.message-expand-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--transition-base);
+}
+
+.message-expand-trigger.expanded .message-expand-icon {
+  transform: rotate(180deg);
+}
+
+.message-expandable-content {
+  overflow: hidden;
+  transition: max-height var(--transition-base), opacity var(--transition-base);
+  max-height: 0;
+  opacity: 0;
+}
+
+.message-expandable-content.expanded {
+  max-height: 500px;
+  opacity: 1;
+}
+
+/* === 思考消息样式 === */
+.message-thinking {
+  --thinking-color: var(--color-primary);
+  --thinking-bg: #f5f3ff;
+  --thinking-border: #ddd6fe;
+}
+
+.message-thinking .message-icon {
+  color: var(--thinking-color);
+}
+
+.message-thinking .message-badge {
+  background: var(--thinking-bg);
+  color: var(--thinking-color);
+}
+
+/* === 工具调用消息样式 === */
+.message-tool {
+  --tool-color: var(--color-success);
+  --tool-bg: #d1fae5;
+  --tool-border: #a7f3d0;
+}
+
+.message-tool .message-icon {
+  color: var(--tool-color);
+}
+
+.message-tool .message-badge {
+  background: var(--tool-bg);
+  color: #065f46;
+}
+
+/* === 规划结果消息样式 === */
+.message-plan {
+  --plan-color: var(--color-info);
+  --plan-bg: #dbeafe;
+  --plan-border: #bfdbfe;
+}
+
+.message-plan .message-icon {
+  color: var(--plan-color);
+}
+
+.message-plan .message-badge {
+  background: var(--plan-bg);
+  color: #1e40af;
+}
+
+/* === 错误消息样式 === */
+.message-error {
+  --error-color: var(--color-error);
+  --error-bg: #fee2e2;
+  --error-border: #fecaca;
+}
+
+.message-error {
+  background: var(--error-bg);
+  border-color: var(--error-border);
+}
+
+.message-error .message-icon {
+  color: var(--error-color);
+}
+
+/* === 消息进入动画 === */
+@keyframes message-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-enter {
+  animation: message-slide-in var(--transition-base) ease-out;
+}
+
+/* === 加载状态 === */
+.message-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.message-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: message-loading-shimmer 1.5s infinite;
+}
+
+@keyframes message-loading-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* === 响应式 === */
+@media (max-width: 768px) {
+  .message {
+    --message-padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .message-content {
+    font-size: var(--font-size-xs);
+  }
+}

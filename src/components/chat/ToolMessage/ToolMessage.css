@@ -1,8 +1,12 @@
+/**
+ * ToolMessage 样式
+ * 使用新的设计 Token 系统
+ */
+
 /* ========== 工具消息容器 ========== */
 .tool-message {
-  margin: var(--spacing-紧) 0;
+  margin-bottom: var(--spacing-md);
   position: relative;
-  overflow: hidden;
 }
 
 .tool-calling {
@@ -10,22 +14,23 @@
 }
 
 @keyframes toolCallingPulse {
-  0%, 100% {
-    background: var(--ink-晕染-浅);
+  0%,
+  100% {
+    background: #f9fafb;
   }
   50% {
-    background: var(--ink-晕染-中);
+    background: #eff6ff;
   }
 }
 
 .tool-completed {
-  animation: toolCompletedFadeIn 0.4s ease-out;
+  animation: toolCompletedFadeIn var(--transition-base) ease-out;
 }
 
 @keyframes toolCompletedFadeIn {
   from {
     opacity: 0;
-    transform: translateX(calc(-1 * var(--rfs-space-lg)));
+    transform: translateX(-8px);
   }
   to {
     opacity: 1;
@@ -37,33 +42,36 @@
   position: relative;
   display: flex;
   align-items: flex-start;
-  gap: var(--rfs-space-lg);
-  padding: var(--rfs-space-lg) var(--rfs-space-xl);
-  background: rgba(255, 255, 255, 0.8);
-  border: var(--border-细);
-  box-shadow: var(--shadow-墨-浅);
-  transition: all 0.3s ease;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: #ffffff;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
   cursor: pointer;
 }
 
 .tool-container:hover {
-  border-color: rgba(26, 26, 26, 0.15);
-  box-shadow: var(--shadow-墨-中);
+  border-color: #bfdbfe;
+  box-shadow: var(--shadow-md);
 }
 
 .tool-calling .tool-container {
-  border-color: rgba(26, 26, 26, 0.15);
+  border-color: #bfdbfe;
+  background: #eff6ff;
 }
 
 .tool-completed .tool-container {
-  border-color: rgba(26, 26, 26, 0.2);
+  border-color: #d1fae5;
+  background: #f0fdf4;
 }
 
 /* ========== 工具图标 ========== */
 .tool-icon-wrapper {
   position: relative;
-  width: var(--rfs-size-2xl);
-  height: var(--rfs-size-2xl);
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
 }
 
@@ -73,25 +81,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--ink-晕染-浅);
-  color: var(--ink-焦);
-  transition: all 0.3s ease;
-  clip-path: polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%);
+  background: #dbeafe;
+  color: #3b82f6;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
 }
 
 .tool-calling .tool-icon {
-  background: var(--ink-晕染-中);
-  color: var(--ink-焦);
+  background: #bfdbfe;
+  color: #1d4ed8;
 }
 
 .tool-completed .tool-icon {
-  background: linear-gradient(135deg, #7a9a7a 0%, #5a8a7a 100%);
-  color: var(--paper-新);
+  background: #d1fae5;
+  color: #059669;
 }
 
 .tool-icon svg {
-  width: var(--rfs-icon-md);
-  height: var(--rfs-icon-md);
+  width: 20px;
+  height: 20px;
 }
 
 .tool-icon.rotating {
@@ -99,22 +107,26 @@
 }
 
 @keyframes toolIconRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .icon-ripple {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: var(--rfs-size-2xl);
-  height: var(--rfs-size-2xl);
-  margin-left: calc(-1 * var(--rfs-size-lg));
-  margin-top: calc(-1 * var(--rfs-size-lg));
-  border: var(--rfs-border-md) solid var(--ink-焦);
+  width: 40px;
+  height: 40px;
+  margin-left: -20px;
+  margin-top: -20px;
+  border: 2px solid #3b82f6;
+  border-radius: var(--radius-md);
   opacity: 0;
   animation: iconRippleEffect 2s ease-out infinite;
-  clip-path: polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%);
 }
 
 @keyframes iconRippleEffect {
@@ -123,7 +135,7 @@
     opacity: 0.4;
   }
   100% {
-    transform: scale(1.6);
+    transform: scale(1.5);
     opacity: 0;
   }
 }
@@ -137,46 +149,50 @@
 .tool-header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-紧);
+  gap: var(--spacing-sm);
 }
 
 .tool-name {
-  font-size: var(--rfs-font-md);
-  font-weight: 600;
-  color: var(--ink-焦);
-  font-family: var(--font-宋);
-  letter-spacing: 0.5px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
 }
 
 .tool-status {
-  font-size: var(--rfs-font-sm);
-  padding: var(--rfs-space-xs) var(--spacing-中);
-  font-weight: 500;
-  background: var(--ink-晕染-浅);
+  font-size: var(--font-size-xs);
+  padding: 2px var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-full);
 }
 
 .tool-status.status-calling {
-  color: var(--ink-焦);
+  color: #3b82f6;
   animation: statusPulse 2s ease-in-out infinite;
 }
 
 @keyframes statusPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .tool-status.status-completed {
-  background: linear-gradient(135deg, #7a9a7a 0%, #5a8a7a 100%);
-  color: var(--paper-新);
+  background: #d1fae5;
+  color: #059669;
 }
 
 /* 展开图标 */
 .tool-expand-icon {
   margin-left: auto;
-  width: var(--rfs-icon-lg);
-  height: var(--rfs-icon-lg);
-  color: var(--ink-淡);
-  transition: transform 0.3s ease;
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-tertiary);
+  transition: transform var(--transition-base);
   flex-shrink: 0;
 }
 
@@ -192,7 +208,7 @@
 /* 工具输入/输出区域 */
 .tool-expand-enter-active,
 .tool-expand-leave-active {
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   overflow: hidden;
 }
 
@@ -205,42 +221,62 @@
 
 .tool-expand-enter-to,
 .tool-expand-leave-from {
-  max-height: clamp(200px, 30vh, 250px);
+  max-height: 300px;
   opacity: 1;
-  margin-top: var(--spacing-紧);
+  margin-top: var(--spacing-sm);
 }
 
 .tool-input,
 .tool-output {
-  margin-top: var(--spacing-紧);
+  margin-top: var(--spacing-sm);
 }
 
 .tool-section-label {
-  font-size: var(--rfs-font-sm);
-  color: var(--ink-淡);
-  margin-bottom: var(--rfs-space-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .tool-json {
   margin: 0;
-  padding: var(--rfs-space-lg);
-  background: var(--ink-晕染-浅);
-  font-size: var(--rfs-font-sm);
-  font-family: 'Courier New', monospace;
-  color: var(--ink-重);
-  line-height: 1.5;
+  padding: var(--spacing-md);
+  background: var(--color-bg-tertiary);
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family-mono);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-normal);
   overflow-x: auto;
-  border-left: var(--rfs-border-md) solid var(--ink-焦);
+  border-radius: var(--radius-md);
+  border-left: 3px solid #3b82f6;
 }
 
 .tool-result-content {
-  padding: var(--rfs-space-lg);
-  background: var(--ink-晕染-浅);
-  font-size: var(--rfs-font-base);
-  color: var(--ink-焦);
-  line-height: 1.6;
+  padding: var(--spacing-md);
+  background: var(--color-bg-tertiary);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-relaxed);
   white-space: pre-wrap;
   word-break: break-word;
-  border-left: var(--rfs-border-md) solid var(--ink-焦);
+  border-radius: var(--radius-md);
+  border-left: 3px solid #059669;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .tool-container {
+    padding: var(--spacing-sm);
+  }
+
+  .tool-icon-wrapper {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tool-icon svg {
+    width: 16px;
+    height: 16px;
+  }
 }
