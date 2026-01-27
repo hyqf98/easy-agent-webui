@@ -11,7 +11,7 @@ export default defineConfig({
     vue(),
     AutoImport({
       resolvers: [ElementPlusResolver()],
-      imports: ['vue', 'vue-router'],
+      imports: ['vue', 'vue-router', 'pinia'],
       dts: 'src/auto-imports.d.ts',
     }),
     Components({
@@ -24,7 +24,6 @@ export default defineConfig({
         /[\\/]node_modules[\\/]/,
         /[\\/]\.git[\\/]/,
         /[\\/]\.nuxt[\\/]/,
-        /[\\/](ThinkingMessage|ToolMessage|NormalMessage)[\\/]/ // Exclude subdirectories we just created
       ],
     }),
   ],
@@ -36,13 +35,5 @@ export default defineConfig({
   server: {
     host: true,
     port: 10000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:20000',
-        changeOrigin: true,
-        // SSE 需要特殊处理
-        ws: true,
-      },
-    },
   },
 })

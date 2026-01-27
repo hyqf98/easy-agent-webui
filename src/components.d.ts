@@ -11,13 +11,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    ElDropdown: typeof import('element-plus/es')['ElDropdown']
-    ElDropdownMenu: typeof import('element-plus/es')['ElDropdownMenu']
-    ElSwitch: typeof import('element-plus/es')['ElSwitch']
-    ElTabPane: typeof import('element-plus/es')['ElTabPane']
-    ElTabs: typeof import('element-plus/es')['ElTabs']
-    ElTooltip: typeof import('element-plus/es')['ElTooltip']
-    ModelSwitcher: typeof import('./components/ModelSwitcher.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
