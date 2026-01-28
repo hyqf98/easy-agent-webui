@@ -86,45 +86,6 @@ export default defineConfig({
 - defineProps, defineEmits, defineExpose
 ```
 
-### Element Plus 组件
-```vue
-<template>
-  <!-- 以下组件直接使用，无需 import -->
-  <el-button>按钮</el-button>
-  <el-input v-model="text" />
-  <el-tabs v-model="activeTab">
-    <el-tab-pane label="标签页" name="tab1" />
-  </el-tabs>
-  <el-switch v-model="enabled" />
-  <el-dropdown>下拉菜单</el-dropdown>
-  <el-dropdown-menu>菜单项</el-dropdown-menu>
-  <el-message-box />
-  <ElMessage />
-</template>
-
-<script setup>
-// 以下 Element Plus 组件相关 API 也自动导入
-// ElMessage.success('成功')
-// ElMessageBox.confirm('确定?', '提示')
-</script>
-```
-
-### 需要手动导入的内容
-```javascript
-// 第三方组件库
-import { XMarkdown, Typewriter } from 'vue-element-plus-x'
-
-// 本地组件
-import ConversationList from '@/components/chat/index.vue'
-import ChatWelcomeView from './components/ChatWelcomeView.vue'
-
-// 工具函数
-import { useSettings } from '@/composables/useSettings'
-
-// 路由配置
-import { createRouter, createWebHistory } from 'vue-router'
-```
-
 ## 代码编写规范
 
 ### 1. 组件结构
@@ -537,25 +498,13 @@ const handleClose = () => {
 src/
 ├── components/              # 公共组件
 │   ├── chat/               # 聊天相关组件
-│   │   ├── index.vue       # 会话列表
-│   │   ├── ConversationList.js  # 工具函数
-│   │   ├── NormalMessage/  # 普通消息
-│   │   ├── ThinkingMessage/  # 思考中消息
-│   │   ├── ToolMessage/    # 工具消息
-│   │   ├── HtmlMessage/    # HTML 消息
-│   │   └── PptMessage/     # PPT 消息
 │   ├── settings/           # 设置相关组件
-│   │   ├── SettingsDialog.vue
-│   │   ├── ModelProviderConfig.vue
-│   │   └── MCPServerConfig.vue
-│   └── ModelSwitcher.vue   # 模型切换器
 ├── views/                  # 页面视图
 │   └── chat/               # 聊天页面
 │       ├── index.vue
 │       └── components/     # 页面子组件
 ├── router/                 # 路由配置
 │   └── index.js
-├── composables/            # 组合式函数
 ├── App.vue                 # 根组件
 └── main.js                 # 入口文件
 ```
