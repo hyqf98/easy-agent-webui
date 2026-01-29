@@ -109,9 +109,13 @@ const isExpanded = ref(props.defaultExpanded)
   transform: rotate(-0.3deg);
   box-shadow: var(--shadow-pencil);
   position: relative;
-  /* 固定宽度，确保收起和展开状态一致 */
-  width: 300px;
-  max-width: 300px;
+  /* 固定宽度 - 收起和展开保持一致 */
+  width: min(350px, 45vw);
+  max-width: min(350px, 45vw);
+  min-width: min(250px, 35vw);
+  box-sizing: border-box;
+  /* 确保容器不会被子元素撑开 */
+  flex-shrink: 0;
 }
 
 /* Sketchy doodle decoration */
@@ -198,12 +202,18 @@ const isExpanded = ref(props.defaultExpanded)
   background: rgba(255, 255, 255, 0.5);
   position: relative;
   z-index: 1;
-  /* 50行文字大约 800px 高度 */
-  max-height: 800px;
+  /* 固定高度范围，内容超出使用滚动条 */
+  max-height: min(800px, 60vh);
+  min-height: 0;
   overflow: auto;
-  /* 固定宽度，超出时横向滚动 */
-  width: 300px;
-  max-width: 300px;
+  overflow-x: hidden;
+  /* 严格继承父容器宽度 */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* 防止内容撑开容器 */
+  display: flex;
+  flex-direction: column;
 }
 
 .thinking-content::-webkit-scrollbar {
@@ -235,7 +245,16 @@ const isExpanded = ref(props.defaultExpanded)
   font-weight: 400;
   white-space: pre-wrap;
   word-break: break-word;
+  overflow-wrap: break-word;
   padding-top: var(--space-sm);
+  /* 严格限制宽度，防止撑开容器 */
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  /* 确保长文本换行而不是撑开 */
+  overflow-wrap: anywhere;
+  /* 防止 flex 子元素撑开 */
+  flex-shrink: 1;
 }
 
 /* Smooth Transition */

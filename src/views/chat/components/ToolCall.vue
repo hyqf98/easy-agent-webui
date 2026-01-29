@@ -166,9 +166,11 @@ const getStatusText = (status) => {
   box-shadow: var(--shadow-pencil);
   position: relative;
   transform-origin: top center;
-  /* 固定宽度，确保收起和展开状态一致 */
-  width: 300px;
-  max-width: 300px;
+  /* 固定宽度，防止动态变化 */
+  width: min(350px, 45vw);
+  max-width: min(350px, 45vw);
+  min-width: min(250px, 35vw);
+  box-sizing: border-box;
 }
 
 /* Different rotations for variety */
@@ -235,6 +237,8 @@ const getStatusText = (status) => {
   font-family: var(--font-hand);
   position: relative;
   z-index: 1;
+  /* 确保内容在一行内显示 */
+  min-height: 44px;
 }
 
 .tool-header:hover {
@@ -272,6 +276,11 @@ const getStatusText = (status) => {
   color: var(--ink-dark);
   text-align: left;
   font-family: var(--font-primary);
+  /* 防止文字换行 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .tool-status {
@@ -281,6 +290,9 @@ const getStatusText = (status) => {
   border-radius: 4px;
   font-family: var(--font-primary);
   border: var(--border-thin) solid;
+  /* 确保状态文字不换行 */
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .tool-status-success {
@@ -391,13 +403,16 @@ const getStatusText = (status) => {
   background: rgba(255, 255, 255, 0.4);
   position: relative;
   z-index: 1;
-  /* 固定高度减半，超出时上下滚动 */
-  max-height: 300px;
+  /* 固定最大高度，内容超出滚动 */
+  max-height: min(300px, 40vh);
   overflow: auto;
-  /* 固定宽度，超出时左右滚动 */
-  width: 300px;
-  max-width: 300px;
-  /* 缩小内容字体 */
+  overflow-x: hidden;
+  /* 继承父容器宽度，保持展开和收起一致 */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* 防止宽度动态变化 */
+  min-width: 0;
   font-size: var(--text-sm);
 }
 
@@ -469,10 +484,22 @@ const getStatusText = (status) => {
   border-radius: 6px;
   font-size: var(--text-sm);
   line-height: 1.5;
+  /* 保持 JSON 格式，支持水平滚动 */
   overflow-x: auto;
+  overflow-y: hidden;
   font-family: 'Noto Sans Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
   font-weight: 400;
   transform: rotate(-0.3deg);
+  /* 响应式字体 */
+  font-size: clamp(11px, 0.7rem + 0.2vw, 13px);
+  /* 保持原始格式，不自动换行 */
+  white-space: pre;
+  /* 不强制断行 */
+  word-break: normal;
+  overflow-wrap: normal;
+  /* 确保最小宽度以便长内容可以滚动 */
+  min-width: 0;
+  display: block;
 }
 
 .code-block::-webkit-scrollbar {
@@ -528,10 +555,14 @@ const getStatusText = (status) => {
   font-weight: 500;
 }
 
-/* Smooth Transition */
+/* Smooth Transition - 使用较小且合理的 max-height 值 */
 .tool-expand-enter-active,
 .tool-expand-leave-active {
-  transition: all var(--duration-normal) var(--ease-sketch);
+  transition:
+    max-height var(--duration-normal) var(--ease-sketch),
+    opacity var(--duration-normal) var(--ease-sketch),
+    transform var(--duration-normal) var(--ease-sketch);
+  max-height: min(300px, 40vh);
   overflow: hidden;
 }
 
@@ -544,7 +575,7 @@ const getStatusText = (status) => {
 
 .tool-expand-enter-to,
 .tool-expand-leave-from {
-  max-height: 1000px;
+  max-height: min(300px, 40vh);
   opacity: 1;
   transform: translateY(0);
 }

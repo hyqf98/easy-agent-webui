@@ -84,9 +84,10 @@ const props = defineProps({
 .file-cards-container {
   margin-top: var(--space-md);
   margin-bottom: var(--space-md);
-  /* 与工具调用容器宽度一致：300px */
-  width: 300px;
-  max-width: 300px;
+  /* 响应式宽度 - 确保有明确的最小宽度 */
+  width: 100%;
+  min-width: min(250px, 40vw);
+  max-width: min(500px, 75vw);
   /* 透明背景，只渲染文件列表 */
   background: transparent;
   border: none;
@@ -156,7 +157,8 @@ const props = defineProps({
 
 .file-card {
   flex-shrink: 0;
-  width: 140px;
+  /* 响应式宽度 */
+  width: clamp(120px, 20%, 160px);
   padding: var(--space-sm);
   background: rgba(250, 247, 240, 0.6);
   border: var(--border-thin) solid var(--ink-medium);

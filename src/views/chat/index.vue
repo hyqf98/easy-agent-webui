@@ -95,6 +95,7 @@
             </template>
           </el-dropdown>
         </div>
+        <div class="header-title">Easy Agent</div>
         <div class="header-actions">
           <button
             class="icon-btn"
@@ -108,31 +109,6 @@
 
       <!-- Messages Container -->
       <div class="messages-container" ref="messagesContainer">
-        <!-- Welcome Message -->
-        <div v-if="messages.length === 0" class="welcome-message">
-          <div class="welcome-content">
-            <h1>Easy Agent</h1>
-            <p>我可以帮助你完成各种任务，包括：</p>
-            <div class="capabilities">
-              <div class="capability-item">
-                <el-icon :size="24"><ChatDotRound /></el-icon>
-                <span>自然语言对话</span>
-              </div>
-              <div class="capability-item">
-                <el-icon :size="24"><Search /></el-icon>
-                <span>联网搜索</span>
-              </div>
-              <div class="capability-item">
-                <el-icon :size="24"><Tools /></el-icon>
-                <span>工具调用</span>
-              </div>
-              <div class="capability-item">
-                <el-icon :size="24"><View /></el-icon>
-                <span>深度思考</span>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Messages List -->
         <TransitionGroup name="message" tag="div" class="messages-list">
@@ -365,85 +341,232 @@ const conversations = ref([
   { id: '4', title: '数据库设计', updatedAt: Date.now() - 1000 * 60 * 60 * 48 }
 ])
 
-// Messages (Mock Data - 展示手绘风格的各种消息类型)
-const messages = ref([
-  {
-    id: '1',
-    role: 'user',
-    content: '帮我分析一下 Vue 3 和 React 的性能差异'
-  },
-  {
-    id: '2',
-    role: 'assistant',
-    thinking: `用户想了解 Vue 3 和 React 的性能差异。
+// Messages (初始化为空数组，用户发送消息后才生成模拟数据)
+const messages = ref([])
+
+// 模拟响应数据生成器 - 根据用户输入触发不同类型的响应
+const generateMockResponse = (userInput) => {
+  const lowerInput = userInput.toLowerCase()
+
+  // 1. 完整响应（思考 + 内容 + 工具调用 + 文件）
+  if (lowerInput.includes('分析') || lowerInput.includes('对比') || lowerInput.includes('性能')) {
+    return {
+      thinking: `用户想了解关于"${userInput}"的分析。
 
 我需要从以下几个维度进行分析：
-1. 虚拟 DOM 的实现差异
-2. 响应式系统的原理
-3. 更新策略和优化机制
-4. 实际场景的性能表现
+1. 核心概念和原理
+2. 技术实现细节
+3. 实际应用场景
+4. 最佳实践建议
 
-为了提供准确的信息，我应该先搜索最新的性能对比数据。`,
-    content: `# Vue 3 vs React 性能对比
+让我先搜索一些最新的资料来确保信息的准确性。`,
+      content: `# 关于"${userInput}"的分析
 
-让我从几个核心方面来分析这两个框架的性能差异：
+让我从几个核心方面来为你分析：
 
-## 1. 响应式系统
-- **Vue 3**: 使用 Proxy 实现的响应式系统，自动追踪依赖，无需手动优化
-- **React**: 依赖不可变数据和手动优化（useMemo、useCallback）
+## 核心要点
 
-## 2. 虚拟 DOM
-- **Vue 3**: 编译时优化，静态节点提升，更新时跳过不必要的比较
-- **React**: 运行时 diff 算法，需要开发者手动优化
+### 1. 技术架构
+- **架构特点**: 模块化设计，支持灵活扩展
+- **性能优化**: 采用现代化技术栈，响应速度快
+- **可维护性**: 代码结构清晰，易于维护
 
-## 3. 性能表现
-根据最新的基准测试，在小到中型应用中，Vue 3 通常比 React 快 **20-30%**，但在大型应用中差距会缩小。
+### 2. 实际应用
+根据最新数据和实际案例：
 
-让我获取一些具体的测试数据来支持这个分析。`,
-    toolCalls: [
-      {
-        name: 'web_search',
-        status: 'success',
-        parameters: {
-          query: 'Vue 3 React performance benchmark 2024',
-          source: 'tech_blogs',
-          limit: 5
+| 指标 | 数值 | 说明 |
+|------|------|------|
+| 性能提升 | 35% | 相比传统方案 |
+| 开发效率 | 50% | 开发时间缩短 |
+| 用户满意度 | 92% | 基于用户反馈 |
+
+### 3. 推荐实践
+1. **初学者**: 从基础概念开始，循序渐进
+2. **进阶开发**: 深入理解底层原理
+3. **生产环境**: 注意性能监控和错误处理
+
+我已经为你生成了一些相关文档和测试数据，可以参考附件中的文件。`,
+      toolCalls: [
+        {
+          name: 'web_search',
+          status: 'success',
+          parameters: {
+            query: userInput,
+            source: 'tech_documentation',
+            limit: 5
+          },
+          result: {
+            source: '技术文档搜索',
+            summary: '找到 5 篇相关技术文章',
+            articles: [
+              { title: '深入解析技术原理', relevance: 95 },
+              { title: '最佳实践指南', relevance: 88 },
+              { title: '性能优化技巧', relevance: 85 },
+              { title: '常见问题解答', relevance: 80 },
+              { title: '实战案例分析', relevance: 75 }
+            ]
+          }
         },
-        result: {
-          source: 'Multiple Tech Blogs',
-          summary: '根据 2024 年多项性能测试',
-          benchmarks: [
-            { framework: 'Vue 3', ops_per_sec: 85000 },
-            { framework: 'React 18', ops_per_sec: 62000 }
-          ],
-          notes: '测试环境：Chrome 120, M1 MacBook Pro'
+        {
+          name: 'code_analysis',
+          status: 'running',
+          parameters: {
+            target: userInput,
+            analysis_type: 'deep'
+          }
+        },
+        {
+          name: 'database_query',
+          status: 'error',
+          parameters: {
+            query: 'SELECT * FROM examples WHERE topic = ?'
+          },
+          error: '连接超时：数据库服务器响应时间过长（>30s），请稍后重试'
         }
-      },
-      {
-        name: 'code_analysis',
-        status: 'running',
-        parameters: {
-          frameworks: ['vue', 'react'],
-          metrics: ['bundle_size', 'runtime_perf', 'memory_usage']
-        }
-      }
-    ],
-    files: [
-      { name: 'benchmark_report.pdf', size: '2.3 MB', type: 'PDF' },
-      { name: 'performance_data.json', size: '156 KB', type: 'JSON' },
-      { name: 'test_results.csv', size: '45 KB', type: 'CSV' },
-      { name: 'analysis.md', size: '12 KB', type: 'MD' },
-      { name: 'vue_app.js', size: '89 KB', type: 'JS' },
-      { name: 'react_app.js', size: '124 KB', type: 'JS' },
-      { name: 'webpack_stats.json', size: '23 KB', type: 'JSON' }
-    ]
-  },
-  {
-    id: '3',
-    role: 'user',
-    content: '测试用户消息'
+      ],
+      files: [
+        { name: 'analysis_report.pdf', size: '1.8 MB', type: 'PDF' },
+        { name: 'test_results.csv', size: '45 KB', type: 'CSV' },
+        { name: 'code_samples.js', size: '23 KB', type: 'JS' },
+        { name: 'config.json', size: '2 KB', type: 'JSON' }
+      ],
+      streaming: true
+    }
   }
-])
+
+  // 2. 简单响应（仅内容）
+  else if (lowerInput.includes('你好') || lowerInput.includes('hi') || lowerInput.includes('hello')) {
+    return {
+      content: `你好！👋
+
+我是 Easy Agent，很高兴为你服务！
+
+我可以帮助你：
+- 💬 **自然语言对话** - 回答各种问题
+- 🔍 **联网搜索** - 获取最新信息
+- 🛠️ **工具调用** - 执行各种任务
+- 🧠 **深度思考** - 提供详细分析
+
+有什么可以帮助你的吗？`,
+      streaming: true
+    }
+  }
+
+  // 3. 工具调用为主（思考 + 多个工具调用）
+  else if (lowerInput.includes('搜索') || lowerInput.includes('查找') || lowerInput.includes('查询')) {
+    return {
+      thinking: `用户想要搜索"${userInput}"。
+
+我需要：
+1. 先进行联网搜索获取相关信息
+2. 分析搜索结果
+3. 整理并呈现给用户
+
+让我先执行搜索操作。`,
+      content: `为你找到了关于"${userInput}"的相关信息：
+
+根据搜索结果，我整理了以下关键信息：
+
+### 主要发现
+- 找到了 **12** 篇相关文章
+- 其中 **8** 篇来自权威来源
+- 信息新鲜度：最近 7 天内有更新
+
+### 核心要点
+1. **最新动态**: 该领域近期有重要进展
+2. **社区讨论**: 活跃度较高，有 500+ 相关讨论
+3. **专家观点**: 多位领域专家发表了看法
+
+详细信息请查看下方的工具调用结果。`,
+      toolCalls: [
+        {
+          name: 'web_search',
+          status: 'success',
+          parameters: {
+            query: userInput,
+            limit: 10,
+            time_range: 'week'
+          },
+          result: {
+            total_results: 12,
+            top_results: [
+              { title: '最新研究进展', url: 'https://example.com/1', date: '2天前' },
+              { title: '专家解读报告', url: 'https://example.com/2', date: '5天前' },
+              { title: '社区讨论汇总', url: 'https://example.com/3', date: '1周前' }
+            ]
+          }
+        },
+        {
+          name: 'knowledge_base',
+          status: 'success',
+          parameters: {
+            query: userInput,
+            database: 'internal_docs'
+          },
+          result: {
+            found: true,
+            documents: 5,
+            best_match: '内部文档库中找到高度相关内容'
+          }
+        }
+      ],
+      streaming: false
+    }
+  }
+
+  // 4. 文件处理为主
+  else if (lowerInput.includes('文件') || lowerInput.includes('下载') || lowerInput.includes('报告')) {
+    return {
+      thinking: `用户请求处理与文件相关的内容：${userInput}
+
+我将：
+1. 查找相关文件
+2. 生成必要的新文件
+3. 提供文件预览信息`,
+      content: `已为你处理文件相关请求：${userInput}
+
+### 生成的文件清单
+
+| 文件名 | 大小 | 类型 | 说明 |
+|--------|------|------|------|
+| summary_report.pdf | 2.1 MB | PDF | 综合分析报告 |
+| data_export.json | 156 KB | JSON | 导出的数据 |
+ charts.png | 45 KB | 图片 | 数据可视化图表 |
+| analysis.md | 12 KB | Markdown | 分析文档 |
+ | script.py | 8 KB | Python | 自动化脚本 |
+
+所有文件已准备就绪，你可以点击上方卡片查看详情或下载。`,
+      files: [
+        { name: 'summary_report.pdf', size: '2.1 MB', type: 'PDF' },
+        { name: 'data_export.json', size: '156 KB', type: 'JSON' },
+        { name: 'charts.png', size: '45 KB', type: 'PNG' },
+        { name: 'analysis.md', size: '12 KB', type: 'MD' },
+        { name: 'script.py', size: '8 KB', type: 'PY' },
+        { name: 'results.csv', size: '23 KB', type: 'CSV' },
+        { name: 'config.yaml', size: '2 KB', type: 'YAML' }
+      ],
+      streaming: false
+    }
+  }
+
+  // 5. 默认响应（简单内容）
+  else {
+    return {
+      content: `收到你的消息："${userInput}"
+
+这是一个演示响应，展示了不同类型的消息效果。
+
+**当前提示**：尝试发送包含以下关键词的消息来查看不同效果：
+- "分析"、"对比"、"性能" → 完整响应（思考 + 内容 + 工具 + 文件）
+- "你好"、"hi" → 简单问候响应
+- "搜索"、"查找" → 工具调用为主的响应
+- "文件"、"报告" → 文件处理为主的响应
+
+我会根据你的输入内容智能选择最合适的响应方式！`,
+      streaming: true
+    }
+  }
+}
 
 // Methods
 const toggleSidebar = () => {
@@ -529,8 +652,20 @@ const handleKeyDown = (e) => {
 const handleInputResize = () => {
   nextTick(() => {
     if (inputRef.value) {
-      inputRef.value.style.height = 'auto'
-      inputRef.value.style.height = Math.min(inputRef.value.scrollHeight, 200) + 'px'
+      const textarea = inputRef.value
+
+      // 重置高度以获取准确的 scrollHeight
+      textarea.style.height = 'auto'
+
+      // 获取内容的实际高度
+      const scrollHeight = textarea.scrollHeight
+
+      // 直接使用 scrollHeight 作为高度，浏览器已经计算好了
+      // 但需要限制最大高度（6行）
+      const maxHeight = 150 // 6行的大约高度
+      const newHeight = Math.min(scrollHeight, maxHeight)
+
+      textarea.style.height = `${newHeight}px`
     }
   })
 }
@@ -557,23 +692,29 @@ const handleSend = async () => {
   await nextTick()
   scrollToBottom()
 
-  // Simulate AI response
+  // Simulate AI response with different types based on input
   isLoading.value = true
 
+  // Simulate thinking delay based on input complexity
+  const delay = content.length > 20 ? 1500 : 800
+
   setTimeout(() => {
+    // Generate mock response based on user input
+    const responseData = generateMockResponse(content)
+
     const assistantMessage = {
       id: String(messages.value.length + 1),
       role: 'assistant',
-      content: `这是对"${content}"的响应。\n\n我可以帮助你解答问题、提供信息或协助完成各种任务。`,
-      streaming: true
+      ...responseData
     }
+
     messages.value.push(assistantMessage)
     isLoading.value = false
 
     nextTick(() => {
       scrollToBottom()
     })
-  }, 1000)
+  }, delay)
 }
 
 const scrollToBottom = () => {
@@ -595,5 +736,4 @@ watch(() => messages.value.length, () => {
 })
 </script>
 
-<style scoped src="./styles.css"></style>
 <style src="./styles.css"></style>
