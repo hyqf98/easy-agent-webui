@@ -105,10 +105,13 @@ const isExpanded = ref(props.defaultExpanded)
   overflow: hidden;
   background: var(--highlight-blue);
   transition: all var(--duration-normal) var(--ease-sketch);
-  font-family: var(--font-primary);
+  font-family: 'Noto Sans Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
   transform: rotate(-0.3deg);
   box-shadow: var(--shadow-pencil);
   position: relative;
+  /* 固定宽度，确保收起和展开状态一致 */
+  width: 300px;
+  max-width: 300px;
 }
 
 /* Sketchy doodle decoration */
@@ -195,9 +198,12 @@ const isExpanded = ref(props.defaultExpanded)
   background: rgba(255, 255, 255, 0.5);
   position: relative;
   z-index: 1;
-  max-width: 600px;
-  max-height: 400px;
+  /* 50行文字大约 800px 高度 */
+  max-height: 800px;
   overflow: auto;
+  /* 固定宽度，超出时横向滚动 */
+  width: 300px;
+  max-width: 300px;
 }
 
 .thinking-content::-webkit-scrollbar {
@@ -225,7 +231,7 @@ const isExpanded = ref(props.defaultExpanded)
   font-size: var(--text-md);
   line-height: 1.8;
   color: var(--ink-dark);
-  font-family: var(--font-primary);
+  font-family: 'Noto Sans Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
   font-weight: 400;
   white-space: pre-wrap;
   word-break: break-word;

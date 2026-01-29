@@ -165,17 +165,11 @@
                   :default-expanded="false"
                 />
 
-                <!-- Tool Call -->
-                <ToolCall
-                  v-if="message.toolCalls && message.toolCalls.length > 0"
-                  :tools="message.toolCalls"
-                />
-
                 <!-- Regular Content -->
                 <div v-if="message.content" class="text-content">
                   <XMarkdown
                     v-if="!message.streaming"
-                    :content="message.content"
+                    :markdown="message.content"
                     class="markdown-content"
                   />
                   <Typewriter
@@ -186,6 +180,18 @@
                     class="typewriter-content"
                   />
                 </div>
+
+                <!-- Tool Call -->
+                <ToolCall
+                  v-if="message.toolCalls && message.toolCalls.length > 0"
+                  :tools="message.toolCalls"
+                />
+
+                <!-- File Cards -->
+                <FileCards
+                  v-if="message.files && message.files.length > 0"
+                  :files="message.files"
+                />
 
                 <!-- Message Actions -->
                 <div class="message-actions">
@@ -328,6 +334,7 @@ import {
 } from '@element-plus/icons-vue'
 import ThinkingBlock from './components/ThinkingBlock.vue'
 import ToolCall from './components/ToolCall.vue'
+import FileCards from './components/FileCards.vue'
 
 // State
 const sidebarCollapsed = ref(false)
@@ -363,124 +370,78 @@ const messages = ref([
   {
     id: '1',
     role: 'user',
-    content: '帮我查询一下北京今天的天气'
+    content: '帮我分析一下 Vue 3 和 React 的性能差异'
   },
   {
     id: '2',
     role: 'assistant',
-    thinking: `用户想查询北京今天的天气情况。
+    thinking: `用户想了解 Vue 3 和 React 的性能差异。
 
-我需要：
-1. 调用天气查询工具获取实时数据
-2. 返回温度、天气状况、风力等信息
-3. 可能需要提供穿衣建议
+我需要从以下几个维度进行分析：
+1. 虚拟 DOM 的实现差异
+2. 响应式系统的原理
+3. 更新策略和优化机制
+4. 实际场景的性能表现
 
-让我使用 search 工具来获取最新的天气信息。`,
+为了提供准确的信息，我应该先搜索最新的性能对比数据。`,
+    content: `# Vue 3 vs React 性能对比
+
+让我从几个核心方面来分析这两个框架的性能差异：
+
+## 1. 响应式系统
+- **Vue 3**: 使用 Proxy 实现的响应式系统，自动追踪依赖，无需手动优化
+- **React**: 依赖不可变数据和手动优化（useMemo、useCallback）
+
+## 2. 虚拟 DOM
+- **Vue 3**: 编译时优化，静态节点提升，更新时跳过不必要的比较
+- **React**: 运行时 diff 算法，需要开发者手动优化
+
+## 3. 性能表现
+根据最新的基准测试，在小到中型应用中，Vue 3 通常比 React 快 **20-30%**，但在大型应用中差距会缩小。
+
+让我获取一些具体的测试数据来支持这个分析。`,
     toolCalls: [
       {
         name: 'web_search',
         status: 'success',
         parameters: {
-          query: '北京今天天气预报',
-          location: 'Beijing',
-          date: '2026-01-28'
+          query: 'Vue 3 React performance benchmark 2024',
+          source: 'tech_blogs',
+          limit: 5
         },
         result: {
-          city: '北京',
-          temperature: '-5°C ~ 3°C',
-          condition: '多云转晴',
-          wind: '北风 3-4级',
-          humidity: '45%',
-          aqi: '85（良）'
+          source: 'Multiple Tech Blogs',
+          summary: '根据 2024 年多项性能测试',
+          benchmarks: [
+            { framework: 'Vue 3', ops_per_sec: 85000 },
+            { framework: 'React 18', ops_per_sec: 62000 }
+          ],
+          notes: '测试环境：Chrome 120, M1 MacBook Pro'
+        }
+      },
+      {
+        name: 'code_analysis',
+        status: 'running',
+        parameters: {
+          frameworks: ['vue', 'react'],
+          metrics: ['bundle_size', 'runtime_perf', 'memory_usage']
         }
       }
     ],
-    content: `# 北京今日天气 ☀️
-
-**温度**: -5°C ~ 3°C
-**天气**: 多云转晴
-**风力**: 北风 3-4级
-**湿度**: 45%
-**空气质量**: AQI 85（良）
-
-> 💡 **温馨提示**: 今天气温较低，建议穿着厚外套、毛衣等保暖衣物。外出请注意防寒保暖！`
+    files: [
+      { name: 'benchmark_report.pdf', size: '2.3 MB', type: 'PDF' },
+      { name: 'performance_data.json', size: '156 KB', type: 'JSON' },
+      { name: 'test_results.csv', size: '45 KB', type: 'CSV' },
+      { name: 'analysis.md', size: '12 KB', type: 'MD' },
+      { name: 'vue_app.js', size: '89 KB', type: 'JS' },
+      { name: 'react_app.js', size: '124 KB', type: 'JS' },
+      { name: 'webpack_stats.json', size: '23 KB', type: 'JSON' }
+    ]
   },
   {
     id: '3',
     role: 'user',
-    content: '再帮我查一下上海的呢？'
-  },
-  {
-    id: '4',
-    role: 'assistant',
-    thinking: `用户现在想查询上海的天气，我需要：
-1. 调用天气查询工具
-2. 获取上海的实时天气数据
-3. 提供相应的建议`,
-    toolCalls: [
-      {
-        name: 'web_search',
-        status: 'success',
-        parameters: {
-          query: '上海今天天气预报',
-          location: 'Shanghai',
-          date: '2026-01-28'
-        },
-        result: {
-          city: '上海',
-          temperature: '8°C ~ 15°C',
-          condition: '阴有小雨',
-          wind: '东风 2-3级',
-          humidity: '78%',
-          aqi: '55（优）'
-        }
-      }
-    ],
-    content: `# 上海今日天气 🌧️
-
-**温度**: 8°C ~ 15°C
-**天气**: 阴有小雨
-**风力**: 东风 2-3级
-**湿度**: 78%
-**空气质量**: AQI 55（优）
-
-> 💡 **温馨提示**: 今天有雨，记得带伞！温度相对温和，穿着轻薄外套即可。`
-  },
-  {
-    id: '5',
-    role: 'user',
-    content: '帮我生成一个快速排序的 Python 代码'
-  },
-  {
-    id: '6',
-    role: 'assistant',
-    content: `# 快速排序算法实现
-
-下面是快速排序的 Python 实现：
-
-\`\`\`python
-def quick_sort(arr):
-    """快速排序算法"""
-    if len(arr) <= 1:
-        return arr
-
-    pivot = arr[len(arr) // 2]
-    left = [x for x in arr if x < pivot]
-    middle = [x for x in arr if x == pivot]
-    right = [x for x in arr if x > pivot]
-
-    return quick_sort(left) + middle + quick_sort(right)
-
-# 使用示例
-numbers = [64, 34, 25, 12, 22, 11, 90]
-sorted_numbers = quick_sort(numbers)
-print(f"排序结果: {sorted_numbers}")
-\`\`\`
-
-**时间复杂度**: O(n log n)
-**空间复杂度**: O(log n)
-
-这是一种**分治算法**，通过选择一个"基准"元素将数组分成两部分，递归地进行排序。`
+    content: '测试用户消息'
   }
 ])
 

@@ -596,8 +596,9 @@
 
 /* Messages List */
 .messages-list {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .message-wrapper {
@@ -649,10 +650,11 @@
 }
 
 .message-content {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  max-width: calc(50% - var(--space-lg) - 38px);
 }
 
 /* User message */
@@ -664,6 +666,8 @@
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
+  flex: 0 1 auto;
+  max-width: calc(50% - var(--space-lg) - 38px);
 }
 
 .user-content {
@@ -674,7 +678,7 @@
   order: 1;
   flex-shrink: 0;
   width: fit-content;
-  max-width: 48%;
+  max-width: 600px;
   box-shadow: var(--shadow-pencil);
   transform: rotate(0.5deg);
   position: relative;
@@ -697,7 +701,7 @@
 .user-content p {
   margin: 0;
   color: var(--ink-dark);
-  font-family: var(--font-primary);
+  font-family: 'Noto Sans Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: var(--text-md);
   font-weight: 400;
   line-height: 1.7;
@@ -714,17 +718,33 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  flex: 0 1 auto;
+  max-width: calc(50% - var(--space-lg) - 38px);
 }
 
 .assistant-content {
   padding-top: 4px;
-  width: fit-content;
-  max-width: 48%;
+  width: auto;
+  min-width: 300px;
+  max-width: 100%;
+}
+
+/* 思考块和工具调用使用组件内部定义的固定宽度 600px */
+.assistant-content .thinking-block,
+.assistant-content .tool-call-container {
+  /* 宽度由组件内部控制 */
 }
 
 /* Text Content - 使用正楷保证可读性 */
 .text-content {
   margin-bottom: var(--space-md);
+  width: 100%;
+  min-width: 300px;
+  max-width: 100%;
+  display: block;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
 }
 
 .markdown-content {
@@ -732,6 +752,68 @@
   font-family: var(--font-primary);
   font-size: var(--text-md);
   line-height: 1.8;
+  width: 100%;
+  min-width: 300px;
+  max-width: 100%;
+  display: block;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
+}
+
+/* 确保内部容器也能正确显示 */
+.markdown-content :deep(.elx-xmarkdown-container) {
+  width: 100% !important;
+  min-width: 300px !important;
+  max-width: 100% !important;
+  display: block !important;
+  min-height: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.markdown-content :deep(.elx-xmarkdown-provider) {
+  width: 100% !important;
+  min-width: 300px !important;
+  max-width: 100% !important;
+  display: block !important;
+  min-height: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* 确保内部的所有 div 容器都有正确的高度 */
+.markdown-content :deep(.elx-xmarkdown-container > div) {
+  min-height: auto !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+.markdown-content :deep(.elx-xmarkdown-provider > div) {
+  min-height: auto !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+/* 修复最内层的实际内容渲染 div - 这个 div 带有所有属性如 isdark, globalshiki 等 */
+.markdown-content :deep(.elx-xmarkdown-provider > div > div) {
+  min-height: auto !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+/* 修复所有嵌套的 div */
+.markdown-content :deep(.elx-xmarkdown-container div),
+.markdown-content :deep(.elx-xmarkdown-provider div) {
+  min-height: auto !important;
+  height: auto !important;
 }
 
 .markdown-content :deep(p) {
@@ -851,6 +933,26 @@
   font-family: var(--font-primary);
   font-size: var(--text-md);
   line-height: 1.8;
+  width: 100%;
+  min-width: 300px;
+  display: block;
+}
+
+/* Typewriter 组件内部容器样式修复 */
+.typewriter-content :deep(.elx-typewriter-container) {
+  width: 100% !important;
+  min-width: 300px !important;
+  display: block !important;
+  min-height: auto !important;
+  height: auto !important;
+}
+
+.typewriter-content :deep(.elx-typewriter-provider) {
+  width: 100%;
+  min-width: 300px;
+  display: block;
+  min-height: auto;
+  height: auto;
 }
 
 /* Message Actions */
@@ -1338,4 +1440,157 @@
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+/* ===================================
+   XMarkdown Component Fix
+   确保 vue-element-plus-x 的 XMarkdown 组件正确显示
+   =================================== */
+
+/* 全局样式修复 XMarkdown 容器 */
+:deep(.elx-xmarkdown-container) {
+  width: 100% !important;
+  min-width: 300px !important;
+  max-width: 100% !important;
+  display: block !important;
+  min-height: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+:deep(.elx-xmarkdown-provider) {
+  width: 100% !important;
+  min-width: 300px !important;
+  max-width: 100% !important;
+  display: block !important;
+  min-height: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* 确保内容区域有足够高度 */
+:deep(.elx-xmarkdown-container > div) {
+  min-height: auto !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+:deep(.elx-xmarkdown-provider > div) {
+  min-height: auto !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+/* 修复最内层的实际内容渲染 div - 这个 div 带有所有属性如 isdark, globalshiki 等 */
+:deep(.elx-xmarkdown-provider > div > div) {
+  min-height: auto !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+:deep(.elx-xmarkdown-container > div > div) {
+  min-height: auto !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+/* 修复所有嵌套的 div 容器 */
+:deep(.elx-xmarkdown-container div),
+:deep(.elx-xmarkdown-provider div) {
+  min-height: auto !important;
+  height: auto !important;
+}
+
+/* 特别修复可能的固定高度问题 */
+:deep(.elx-xmarkdown-container [style*="height"]),
+:deep(.elx-xmarkdown-provider [style*="height"]) {
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* ===================================
+   CRITICAL FIX: 修复 XMarkdown 内部渲染 div 的高度问题
+   这个 div 带有 isdark, globalshiki, allowhtml 等属性
+   =================================== */
+
+/* 针对带有特定属性的 div 进行强制修复 */
+:deep(div[isdark][globalshiki]) {
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+/* 针对所有可能的内容渲染 div */
+:deep(.elx-xmarkdown-container [isdark]),
+:deep(.elx-xmarkdown-provider [isdark]),
+:deep(.markdown-content [isdark]),
+:deep(.text-content [isdark]) {
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+/* 针对所有带有 allowhtml 属性的 div */
+:deep([allowhtml]) {
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* 针对所有带有 enablelatex 属性的 div */
+:deep([enablelatex]) {
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* 针对 text-content 内的所有直接子 div */
+.text-content > div {
+  min-height: auto !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+.text-content > div > div {
+  min-height: auto !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+.text-content > div > div > div {
+  min-height: auto !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+/* 针对所有可能的嵌套层级 */
+.text-content div,
+.markdown-content div {
+  min-height: auto !important;
+  height: auto !important;
 }

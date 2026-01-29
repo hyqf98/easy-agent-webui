@@ -4,7 +4,10 @@
       v-for="(tool, index) in tools"
       :key="index"
       class="tool-call-item"
-      :class="`tool-rotate-${index % 3}`"
+      :class="[
+        `tool-rotate-${index % 3}`,
+        `tool-status-bg-${tool.status || 'success'}`
+      ]"
     >
       <button
         class="tool-header"
@@ -69,7 +72,8 @@ const props = defineProps({
   }
 })
 
-const expandedIndices = ref([0])
+// 默认全部收起 - 空数组
+const expandedIndices = ref([])
 
 const toggleExpanded = (index) => {
   const pos = expandedIndices.value.indexOf(index)
@@ -162,6 +166,9 @@ const getStatusText = (status) => {
   box-shadow: var(--shadow-pencil);
   position: relative;
   transform-origin: top center;
+  /* 固定宽度，确保收起和展开状态一致 */
+  width: 300px;
+  max-width: 300px;
 }
 
 /* Different rotations for variety */
@@ -178,6 +185,20 @@ const getStatusText = (status) => {
 .tool-call-item.tool-rotate-2 {
   transform: rotate(-0.5deg);
   --rotation: -0.5deg;
+}
+
+/* Different background colors based on status */
+.tool-call-item.tool-status-bg-success {
+  background: var(--highlight-yellow);
+}
+
+.tool-call-item.tool-status-bg-error {
+  background: var(--highlight-pink);
+}
+
+.tool-call-item.tool-status-bg-running {
+  background: rgba(150, 200, 180, 0.25);
+  border-color: #7A9B6E;
 }
 
 .tool-call-item:hover {
@@ -275,9 +296,88 @@ const getStatusText = (status) => {
 }
 
 .tool-status-running {
-  background: var(--highlight-yellow);
-  color: #A67A35;
-  border-color: #C4875B;
+  background: rgba(150, 220, 180, 0.4);
+  color: #5A8B54;
+  border-color: #7A9B6E;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Progress bar animation for running state */
+.tool-status-running::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(150, 220, 180, 0.6),
+    transparent
+  );
+  animation: progress-sweep 2s ease-in-out infinite;
+}
+
+@keyframes progress-sweep {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Pulsing glow for running tool */
+.tool-call-item:has(.tool-status-running) {
+  position: relative;
+}
+
+.tool-call-item:has(.tool-status-running)::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(150, 220, 180, 0.1);
+  border-radius: 6px;
+  animation: pulse-glow 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Spinning icon for running state */
+.tool-call-item:has(.tool-status-running) .tool-icon {
+  animation: icon-spin 3s linear infinite;
+}
+
+@keyframes icon-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  75% {
+    transform: rotate(10deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 .expand-icon {
@@ -291,9 +391,20 @@ const getStatusText = (status) => {
   background: rgba(255, 255, 255, 0.4);
   position: relative;
   z-index: 1;
-  max-width: 600px;
-  max-height: 500px;
+  /* 固定高度减半，超出时上下滚动 */
+  max-height: 300px;
   overflow: auto;
+  /* 固定宽度，超出时左右滚动 */
+  width: 300px;
+  max-width: 300px;
+  /* 缩小内容字体 */
+  font-size: var(--text-sm);
+}
+
+/* Running state content background */
+.tool-call-item.tool-status-bg-running .tool-content {
+  background: rgba(255, 255, 255, 0.5);
+  border-top-color: #7A9B6E;
 }
 
 .tool-content::-webkit-scrollbar {
@@ -318,14 +429,14 @@ const getStatusText = (status) => {
 }
 
 .tool-section {
-  padding: var(--space-sm) 0;
+  padding: var(--space-xs) 0;
 }
 
 .section-label {
-  font-size: var(--text-xs);
+  font-size: 10px;
   font-weight: 500;
   color: var(--ink-medium);
-  margin-bottom: var(--space-xs);
+  margin-bottom: 2px;
   font-family: var(--font-primary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -351,13 +462,13 @@ const getStatusText = (status) => {
 
 .code-block {
   margin: 0;
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-xs) var(--space-sm);
   background: var(--paper-warm);
   color: var(--ink-dark);
   border: var(--border-sketch) solid var(--ink-medium);
   border-radius: 6px;
-  font-size: var(--text-md);
-  line-height: 1.6;
+  font-size: var(--text-sm);
+  line-height: 1.5;
   overflow-x: auto;
   font-family: 'Noto Sans Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
   font-weight: 400;
@@ -378,12 +489,12 @@ const getStatusText = (status) => {
 }
 
 .result-text {
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-xs) var(--space-sm);
   background: var(--paper-base);
   border: var(--border-sketch) solid var(--ink-medium);
   border-radius: 6px;
-  font-size: var(--text-md);
-  line-height: 1.7;
+  font-size: var(--text-sm);
+  line-height: 1.6;
   color: var(--ink-dark);
   font-family: var(--font-primary);
   font-weight: 500;
