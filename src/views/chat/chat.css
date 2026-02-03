@@ -1,0 +1,88 @@
+/**
+ * 聊天页面样式
+ * 简约优雅 · 自然暖色主题
+ */
+
+/* 主容器 */
+.chat-container {
+  display: flex;
+  height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* 对话主区域 */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+/* 顶部工具栏已移除，样式保留备用 */
+
+/* 消息容器动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-fade-in {
+  animation: fadeInUp 0.35s cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+/* 思考图标脉搏动画 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+.thinking-icon-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* 工具调用旋转动画 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tool-call-spinning {
+  animation: spin 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* 打字机光标 */
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  width: 0.125rem;
+  height: 1em;
+  background: var(--accent-primary);
+  margin-left: 0.0625rem;
+  animation: blink 1s step-end infinite;
+}
