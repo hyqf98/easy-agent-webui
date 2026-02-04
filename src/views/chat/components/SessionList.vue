@@ -3,7 +3,15 @@
     <div class="session-list-header">
       <div class="header-content">
         <h2 class="session-list-title">对话</h2>
-        <span class="session-count">{{ sessions.length }}</span>
+        <div class="header-actions">
+          <button class="icon-btn" title="系统配置" @click="handleOpenConfig">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 2.5C5 2.5 2.5 5 2.5 8C2.5 11 5 13.5 8 13.5C11 13.5 13.5 11 13.5 8C13.5 5 11 2.5 8 2.5Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <path d="M8 5.5V8L10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <span class="session-count">{{ sessions.length }}</span>
+        </div>
       </div>
     </div>
 
@@ -51,6 +59,12 @@
       @clear="handleClear"
       @delete="handleDelete"
     />
+
+    <!-- 系统配置对话框 -->
+    <SystemConfigDialog
+      v-model:visible="configDialogVisible"
+      @refresh="handleConfigRefresh"
+    />
   </aside>
 </template>
 
@@ -59,6 +73,7 @@ import { computed, ref } from 'vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useChatStore } from '@/stores/chat'
 import SessionContextMenu from './SessionContextMenu.vue'
+import SystemConfigDialog from './SystemConfigDialog.vue'
 
 const props = defineProps({
   collapsed: {
@@ -78,8 +93,21 @@ const menuX = ref(0)
 const menuY = ref(0)
 const menuSessionId = ref(null)
 
+// 配置对话框状态
+const configDialogVisible = ref(false)
+
 const selectSession = (id) => {
   chatStore.setCurrentSession(id)
+}
+
+// 打开配置对话框
+const handleOpenConfig = () => {
+  configDialogVisible.value = true
+}
+
+// 配置刷新回调
+const handleConfigRefresh = () => {
+  // 可以在这里触发模型列表刷新等操作
 }
 
 const createNewSession = () => {
@@ -193,6 +221,33 @@ const formatTime = (timestamp) => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.icon-btn:hover {
+  background: var(--bg-hover);
+  color: var(--accent-primary);
 }
 
 .session-list-title {
