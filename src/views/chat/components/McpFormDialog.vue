@@ -56,7 +56,7 @@
         <el-form-item label="命令参数" prop="commandArgs">
           <el-input
             v-model="form.commandArgs"
-            placeholder="JSON数组格式，如：[\"-y\", \"@server/filesystem\", \"/data\"]"
+            placeholder='JSON数组格式，如：["-y", "@server/filesystem", "/data"]'
             type="textarea"
             :rows="2"
           />
@@ -65,7 +65,7 @@
         <el-form-item label="环境变量" prop="commandEnv">
           <el-input
             v-model="form.commandEnv"
-            placeholder="JSON对象格式，如：{\"API_KEY\": \"xxx\"}"
+            placeholder='JSON对象格式，如：{"API_KEY": "xxx"}'
             type="textarea"
             :rows="2"
           />
