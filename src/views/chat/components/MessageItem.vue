@@ -20,11 +20,12 @@
     <ToolThoughtView
       v-else-if="message.type === 'tool_through'"
       :content="message.content"
+      :is-streaming="message.status === 'streaming'"
     />
 
     <!-- 最终答案 -->
     <FinalAnswerView
-      v-else-if="message.type === 'final_answer'"
+      v-else-if="message.type === 'final_answer' || message.type === 'content_chunk'"
       :content="message.content"
       :is-streaming="message.status === 'streaming'"
     />
@@ -39,7 +40,7 @@
     <div v-else-if="message.type === 'error'" class="error-message">
       <div class="error-content">
         <div class="error-header">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <svg width="1.25rem" height="1.25rem" viewBox="0 0 20 20" fill="none">
             <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
             <path d="M10 6V10M10 14V14.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
@@ -77,6 +78,7 @@ const formatTime = (timestamp) => {
 
 <style scoped>
 .message-item {
+  width: 100%;
   display: flex;
   animation: fadeInUp 0.35s cubic-bezier(0.2, 0, 0.2, 1);
 }
@@ -94,17 +96,21 @@ const formatTime = (timestamp) => {
 
 /* 用户消息 */
 .user-message {
+  width: 100%;
+  display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.375rem;
 }
 
 .message-bubble {
-  max-width: 75%;
-  padding: 0.875rem 1.125rem;
+  max-width: 70%;
+  min-width: 4rem;
+  padding: 0.75rem 1rem;
   font-size: 0.9375rem;
   line-height: 1.6;
   word-wrap: break-word;
+  word-break: break-word;
   box-shadow: var(--shadow-sm);
 }
 

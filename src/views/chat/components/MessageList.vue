@@ -7,14 +7,23 @@
         :message="message"
       />
 
-      <!-- 加载中提示 -->
-      <div v-if="isLoading" class="loading-indicator">
-        <div class="loading-dots">
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
+      <!-- 加载中提示 - 只在还没收到 AI 消息时显示 -->
+      <div v-if="showLoadingIndicator" class="loading-indicator">
+        <div class="loading-avatar">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2L14 6L10 10L6 6L10 2Z" fill="currentColor"/>
+            <path d="M10 18L14 14L10 10L6 14L10 18Z" fill="currentColor"/>
+            <path d="M2 10L6 6L10 10L6 14L2 10Z" fill="currentColor" opacity="0.6"/>
+            <path d="M18 10L14 6L10 10L14 14L18 10Z" fill="currentColor" opacity="0.6"/>
+          </svg>
         </div>
-        <span class="loading-text">思考中...</span>
+        <div class="loading-content">
+          <div class="loading-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -43,6 +52,16 @@ const isUserScrolling = ref(false)
 
 const messages = computed(() => chatStore.messages)
 const isLoading = computed(() => chatStore.isLoading)
+
+// 是否显示加载动画 - 只在还没收到 AI 消息时显示
+const showLoadingIndicator = computed(() => {
+  if (!isLoading.value) return false
+  // 检查是否有流式状态的 AI 消息
+  const hasStreamingMessage = messages.value.some(m =>
+    (m.type === 'content_chunk' || m.type === 'final_answer') && m.status === 'streaming'
+  )
+  return !hasStreamingMessage
+})
 
 // 自动滚动到底部
 const scrollToBottom = (force = false) => {
@@ -102,15 +121,27 @@ defineExpose({
 
 .loading-indicator {
   display: flex;
-  align-items: center;
   gap: 0.75rem;
-  padding: 1rem 1.25rem;
+  align-items: flex-start;
+}
+
+.loading-avatar {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-xl);
+  background: var(--accent-light);
+  color: var(--accent-primary);
+  border-radius: var(--radius-md);
+}
+
+.loading-content {
+  background: var(--msg-ai-bg);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-xl) var(--radius-2xl) var(--radius-xl) var(--radius-xs);
   box-shadow: var(--shadow-sm);
-  width: fit-content;
-  margin: 0 auto;
 }
 
 .loading-dots {

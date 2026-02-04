@@ -2,7 +2,17 @@
  * 聊天 API 接口
  */
 
-const BASE_URL = '/api'
+// 获取 API 基础地址
+// 开发环境：留空走 Vite 代理，生产环境：使用完整地址
+const getBaseURL = () => {
+  const envBaseURL = import.meta.env.VITE_API_BASE_URL
+
+  // 如果环境变量为空或未定义，使用相对路径走代理
+  if (!envBaseURL || envBaseURL === '""' || envBaseURL === 'undefined') {
+    return '/api'
+  }
+  return envBaseURL
+}
 
 /**
  * SSE 流式聊天
@@ -13,8 +23,14 @@ const BASE_URL = '/api'
  * @returns {Promise<void>}
  */
 export async function streamChat(data, onMessage, onError, signal) {
+  const baseURL = getBaseURL()
+  const url = `${baseURL}/chat/stream`
+
+  // 收集完整的 SSE 消息
+  const sseMessages = []
+
   try {
-    const response = await fetch(`${BASE_URL}/chat/stream`, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -34,7 +50,17 @@ export async function streamChat(data, onMessage, onError, signal) {
     while (true) {
       const { done, value } = await reader.read()
 
-      if (done) break
+      if (done) {
+        // 打印完整的 SSE 消息
+        console.log('=== SSE 完整消息 ===', {
+          sessionId: data.sessionId,
+          requestId: data.requestId,
+          messageCount: sseMessages.length,
+          messages: sseMessages,
+          fullContent: sseMessages.map(m => m.content?.text || '').join('')
+        })
+        break
+      }
 
       // 解码并追加到缓冲区
       buffer += decoder.decode(value, { stream: true })
@@ -49,19 +75,21 @@ export async function streamChat(data, onMessage, onError, signal) {
 
         // 解析 data: 行
         if (line.startsWith('data:')) {
-          const data = line.slice(5).trim()
+          const eventData = line.slice(5).trim()
           try {
-            const parsed = JSON.parse(data)
+            const parsed = JSON.parse(eventData)
+            sseMessages.push(parsed)
             onMessage(parsed)
           } catch (e) {
-            console.error('Failed to parse SSE data:', data, e)
+            console.error('[chat.js] 解析 SSE 数据失败:', eventData, e)
           }
         }
       }
     }
   } catch (error) {
+    console.error('[chat.js] 请求错误:', error)
     if (error.name === 'AbortError') {
-      console.log('Stream aborted by user')
+      // 用户取消请求，不打印日志
     } else {
       onError(error)
     }
@@ -73,7 +101,8 @@ export async function streamChat(data, onMessage, onError, signal) {
  * @returns {Promise<Array>}
  */
 export async function getModels() {
-  const response = await fetch(`${BASE_URL}/models`)
+  const baseURL = getBaseURL()
+  const response = await fetch(`${baseURL}/models`)
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   }
@@ -85,7 +114,8 @@ export async function getModels() {
  * @returns {Promise<Array>}
  */
 export async function getTools() {
-  const response = await fetch(`${BASE_URL}/tools`)
+  const baseURL = getBaseURL()
+  const response = await fetch(`${baseURL}/tools`)
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   }

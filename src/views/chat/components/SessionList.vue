@@ -1,28 +1,5 @@
 <template>
-  <aside class="session-list">
-    <!-- 模型选择器 -->
-    <div class="model-selector-wrapper">
-      <el-select
-        v-model="selectedModelCode"
-        placeholder="选择模型"
-        size="small"
-        class="model-select"
-        @change="handleModelChange"
-      >
-        <el-option
-          v-for="model in models"
-          :key="model.modelCode"
-          :label="model.modelName"
-          :value="model.modelCode"
-        >
-          <div class="model-option">
-            <span class="model-name">{{ model.modelName }}</span>
-            <span class="model-provider">{{ model.providerDesc }}</span>
-          </div>
-        </el-option>
-      </el-select>
-    </div>
-
+  <aside class="session-list" :class="{ collapsed }">
     <div class="session-list-header">
       <div class="header-content">
         <h2 class="session-list-title">对话</h2>
@@ -37,6 +14,7 @@
         class="session-item"
         :class="{ active: session.id === currentSessionId }"
         @click="selectSession(session.id)"
+        @contextmenu.prevent="handleContextMenu($event, session.id)"
       >
         <div class="session-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -47,13 +25,6 @@
         <div class="session-info">
           <div class="session-title">{{ session.title }}</div>
           <div class="session-time">{{ formatTime(session.createdAt) }}</div>
-        </div>
-        <div class="session-actions">
-          <button class="action-btn" @click.stop="deleteSession(session.id)">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M3.5 4.5H10.5M4.5 4.5V9.5C4.5 10.0523 4.94772 10.5 5.5 10.5H8.5C9.05228 10.5 9.5 10.0523 9.5 9.5V4.5M6 4.5V3.5C6 3.22386 6.22386 3 6.5 3H7.5C7.77614 3 8 3.22386 8 3.5V4.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-            </svg>
-          </button>
         </div>
       </div>
     </div>
@@ -68,22 +39,44 @@
         <span>新建对话</span>
       </button>
     </div>
+
+    <!-- 右键菜单 -->
+    <SessionContextMenu
+      :visible="menuVisible"
+      :x="menuX"
+      :y="menuY"
+      :sessionId="menuSessionId"
+      @close="menuVisible = false"
+      @rename="handleRename"
+      @clear="handleClear"
+      @delete="handleDelete"
+    />
   </aside>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, ref } from 'vue'
+import { ElMessageBox, ElMessage } from 'element-plus'
 import { useChatStore } from '@/stores/chat'
+import SessionContextMenu from './SessionContextMenu.vue'
+
+const props = defineProps({
+  collapsed: {
+    type: Boolean,
+    default: false
+  }
+})
 
 const chatStore = useChatStore()
 
 const sessions = computed(() => chatStore.sessions)
 const currentSessionId = computed(() => chatStore.currentSessionId)
-const models = computed(() => chatStore.models)
-const selectedModelCode = computed({
-  get: () => chatStore.selectedModelCode,
-  set: (val) => chatStore.setSelectedModel(val)
-})
+
+// 右键菜单状态
+const menuVisible = ref(false)
+const menuX = ref(0)
+const menuY = ref(0)
+const menuSessionId = ref(null)
 
 const selectSession = (id) => {
   chatStore.setCurrentSession(id)
@@ -93,16 +86,68 @@ const createNewSession = () => {
   chatStore.createSession()
 }
 
-const deleteSession = (id) => {
-  chatStore.deleteSession(id)
+// 右键菜单处理
+const handleContextMenu = (event, sessionId) => {
+  menuX.value = event.clientX
+  menuY.value = event.clientY
+  menuSessionId.value = sessionId
+  menuVisible.value = true
 }
 
-const handleModelChange = (modelCode) => {
-  chatStore.setSelectedModel(modelCode)
+// 重命名会话
+const handleRename = async (sessionId) => {
+  const session = sessions.value.find(s => s.id === sessionId)
+  if (!session) return
+
+  ElMessageBox.prompt('请输入会话标题', '重命名会话', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    inputValue: session.title,
+    inputPattern: /^.{1,30}$/,
+    inputErrorMessage: '标题长度为1-30个字符'
+  }).then(({ value }) => {
+    chatStore.renameSession(sessionId, value)
+    ElMessage.success('重命名成功')
+  }).catch(() => {
+    // 用户取消
+  })
+}
+
+// 清空消息
+const handleClear = async (sessionId) => {
+  ElMessageBox.confirm('确定要清空该会话的所有消息吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    chatStore.clearSessionMessages(sessionId)
+  }).catch(() => {
+    // 用户取消
+  })
+}
+
+// 删除会话
+const handleDelete = async (sessionId) => {
+  ElMessageBox.confirm('确定要删除该会话吗？删除后无法恢复。', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    chatStore.deleteSession(sessionId)
+    ElMessage.success('删除成功')
+  }).catch(() => {
+    // 用户取消
+  })
 }
 
 const formatTime = (timestamp) => {
+  // 处理无效时间戳
+  if (!timestamp) return '刚刚'
+
   const date = new Date(timestamp)
+  // 检查是否为有效日期
+  if (isNaN(date.getTime())) return '刚刚'
+
   const now = new Date()
   const diff = now - date
 
@@ -115,10 +160,6 @@ const formatTime = (timestamp) => {
   if (diff < 604800000) return `${Math.floor(diff / 86400000)} 天前`
   return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
 }
-
-onMounted(() => {
-  chatStore.loadModels()
-})
 </script>
 
 <style scoped>
@@ -131,56 +172,15 @@ onMounted(() => {
   flex-direction: column;
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border-subtle);
+  transition: transform 0.3s ease, width 0.3s ease;
 }
 
-/* 模型选择器 */
-.model-selector-wrapper {
-  padding: 0.875rem 1rem;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.model-select {
-  width: 100%;
-}
-
-.model-select :deep(.el-input__wrapper) {
-  background: var(--bg-elevated);
-  border-color: var(--border-subtle);
-  box-shadow: none;
-  border-radius: var(--radius-lg);
-  transition: var(--transition-base);
-}
-
-.model-select :deep(.el-input__wrapper:hover) {
-  border-color: var(--border-default);
-}
-
-.model-select :deep(.el-input__wrapper.is-focus) {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(124, 154, 109, 0.1);
-}
-
-.model-select :deep(.el-input__inner) {
-  font-size: 0.8125rem;
-  color: var(--text-primary);
-}
-
-.model-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.model-name {
-  font-size: 0.8125rem;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.model-provider {
-  font-size: 0.6875rem;
-  color: var(--text-tertiary);
+.session-list.collapsed {
+  width: 0;
+  min-width: 0;
+  transform: translateX(-100%);
+  border: none;
+  overflow: hidden;
 }
 
 /* 会话列表头部 */
@@ -298,35 +298,6 @@ onMounted(() => {
   color: var(--text-tertiary);
 }
 
-.session-actions {
-  flex-shrink: 0;
-  opacity: 0;
-  transition: var(--transition-base);
-}
-
-.session-item:hover .session-actions {
-  opacity: 1;
-}
-
-.action-btn {
-  width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: var(--transition-base);
-}
-
-.action-btn:hover {
-  color: var(--color-error);
-  background: rgba(196, 120, 106, 0.1);
-}
-
 .session-list-footer {
   padding: 0.875rem;
   border-top: 1px solid var(--border-subtle);
@@ -364,5 +335,94 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+</style>
+
+<style>
+/* Element Plus MessageBox 主题定制 */
+.el-message-box {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+}
+
+.el-message-box__header {
+  padding: 1.25rem 1.5rem 0.75rem;
+}
+
+.el-message-box__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.el-message-box__content {
+  padding: 0.75rem 1.5rem;
+  color: var(--text-secondary);
+}
+
+.el-message-box__message {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.el-message-box__input {
+  padding-top: 0.75rem;
+}
+
+.el-message-box__input .el-input__wrapper {
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 1px var(--border-default) inset;
+  padding: 0.5rem 0.75rem;
+}
+
+.el-message-box__input .el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--border-strong) inset;
+}
+
+.el-message-box__input .el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
+.el-message-box__btns {
+  padding: 0.75rem 1.5rem 1.25rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.el-message-box__btns .el-button {
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.el-message-box__btns .el-button--primary {
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--text-inverse);
+}
+
+.el-message-box__btns .el-button--primary:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.el-message-box__btns .el-button--default {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+.el-message-box__btns .el-button--default:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.el-message-box__errormsg {
+  color: var(--color-error);
+  font-size: 0.75rem;
+  margin-top: 0.375rem;
 }
 </style>

@@ -1,9 +1,7 @@
 /**
  * 模型 API
  */
-import axios from 'axios'
-
-const BASE_URL = '/api'
+import request from '@/utils/request'
 
 /**
  * 模型 API
@@ -14,10 +12,9 @@ export const modelApi = {
    * @returns {Promise<Array>} 模型列表
    */
   async getEnabledModels() {
-    const { data } = await axios.post(`${BASE_URL}/model/list`, {
+    return request.post('/model/list', {
       enabled: true
     })
-    return data
   },
 
   /**
@@ -26,7 +23,6 @@ export const modelApi = {
    * @returns {Promise<Object>} 模型信息
    */
   async getByModelCode(modelCode) {
-    const { data } = await axios.get(`${BASE_URL}/model/code/${modelCode}`)
-    return data
+    return request.get(`/model/code/${modelCode}`)
   }
 }

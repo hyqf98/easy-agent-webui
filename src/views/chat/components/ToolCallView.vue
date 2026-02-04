@@ -5,14 +5,14 @@
         <template #title>
           <div class="tool-call-header" :class="statusClass">
             <span class="status-icon" :class="iconClass">
-              <svg v-if="toolCall.status === 'calling'" width="16" height="16" viewBox="0 0 16 16" fill="none" class="tool-call-spinning">
+              <svg v-if="toolCall.status === 'calling'" width="1rem" height="1rem" viewBox="0 0 16 16" fill="none" class="tool-call-spinning">
                 <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="12 4"/>
               </svg>
-              <svg v-else-if="toolCall.status === 'success'" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <svg v-else-if="toolCall.status === 'success'" width="1rem" height="1rem" viewBox="0 0 16 16" fill="none">
                 <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
                 <path d="M5.5 8L7.5 10L10.5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <svg v-else width="1rem" height="1rem" viewBox="0 0 16 16" fill="none">
                 <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
                 <path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
@@ -22,7 +22,8 @@
           </div>
         </template>
 
-        <div class="tool-call-body">
+        <!-- 所有内容放在一个可滚动容器内 -->
+        <div class="tool-call-content-scroll">
           <!-- 输入参数 -->
           <div class="tool-section">
             <div class="section-label">输入参数</div>
@@ -99,7 +100,12 @@ const formatJson = (data) => {
 
 <style scoped>
 .tool-call-view {
-  max-width: 75%;
+  /* 与 FinalAnswerView 的内容区域左对齐 */
+  /* 2rem (头像宽度) + 0.75rem (gap) = 2.75rem */
+  margin-left: 2.75rem;
+  max-width: calc(100% - 2.75rem);
+  min-width: 18.75rem; /* 300px → 18.75rem */
+  width: auto;
 }
 
 .tool-call-header {
@@ -150,9 +156,32 @@ const formatJson = (data) => {
   color: var(--text-tertiary);
 }
 
-/* 工具调用内容 */
-.tool-call-body {
-  padding: 0.75rem 0 0;
+/* 可滚动的内容容器 */
+.tool-call-content-scroll {
+  max-height: 25rem; /* 400px → 25rem */
+  overflow-y: auto;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  margin-top: 0.5rem;
+}
+
+/* 自定义滚动条 */
+.tool-call-content-scroll::-webkit-scrollbar {
+  width: 0.375rem; /* 6px → 0.375rem */
+}
+
+.tool-call-content-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tool-call-content-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 0.1875rem; /* 3px → 0.1875rem */
+}
+
+.tool-call-content-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
 }
 
 .tool-section {
@@ -174,9 +203,9 @@ const formatJson = (data) => {
 
 /* JSON 内容展示 */
 .json-content {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: var(--radius-sm);
+  padding: 0.625rem 0.75rem;
   font-family: 'Fira Code', 'Consolas', monospace;
   font-size: 0.8125rem;
   line-height: 1.5;

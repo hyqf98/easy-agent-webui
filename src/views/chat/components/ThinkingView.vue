@@ -2,7 +2,7 @@
   <div class="thinking-view message-fade-in">
     <div class="thinking-header">
       <span class="thinking-icon">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" class="thinking-icon-pulse">
+        <svg width="1.125rem" height="1.125rem" viewBox="0 0 18 18" fill="none" class="thinking-icon-pulse">
           <path d="M9 2C5.13 2 2 5.13 2 9C2 12.87 5.13 16 9 16C12.87 16 16 12.87 16 9C16 5.13 12.87 2 9 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           <path d="M9 6V9L11 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -26,11 +26,15 @@ defineProps({
 
 <style scoped>
 .thinking-view {
+  /* 与 FinalAnswerView 的内容区域左对齐 */
+  /* 2rem (头像宽度) + 0.75rem (gap) = 2.75rem */
+  margin-left: 2.75rem;
   background: var(--thinking-bg);
   border-radius: var(--radius-xl);
   padding: 0.875rem 1.125rem;
-  max-width: 75%;
+  max-width: calc(100% - 2.75rem);
   box-shadow: var(--shadow-xs);
+  width: fit-content;
 }
 
 .thinking-header {
