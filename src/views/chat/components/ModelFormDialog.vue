@@ -260,15 +260,6 @@ const rules = {
   ]
 }
 
-// 监听 props.formData 变化，回显数据
-watch(() => props.formData, (newData) => {
-  if (newData) {
-    form.value = { ...newData }
-  } else {
-    resetForm()
-  }
-}, { immediate: true })
-
 // 重置表单
 const resetForm = () => {
   form.value = {
@@ -291,6 +282,15 @@ const resetForm = () => {
   }
   formRef.value?.clearValidate()
 }
+
+// 监听 props.formData 变化，回显数据
+watch(() => props.formData, (newData) => {
+  if (newData) {
+    form.value = { ...newData }
+  } else {
+    resetForm()
+  }
+}, { immediate: true })
 
 // 关闭对话框
 const handleClose = () => {
