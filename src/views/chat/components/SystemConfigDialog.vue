@@ -2,7 +2,7 @@
   <el-dialog
     v-model="dialogVisible"
     title="系统配置"
-    :width="56.25rem"
+    width="56.25rem"
     :close-on-click-modal="false"
     class="system-config-dialog"
     @close="handleClose"

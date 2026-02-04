@@ -2,7 +2,7 @@
   <el-drawer
     v-model="drawerVisible"
     title="MCP服务器详情"
-    :size="37.5rem"
+    size="37.5rem"
     class="mcp-detail-drawer"
   >
     <el-tabs v-model="activeTab" class="detail-tabs">
