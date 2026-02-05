@@ -233,3 +233,57 @@
   margin-left: 0.0625rem;
   animation: blink 1s step-end infinite;
 }
+
+/* ==================== 欢迎模式 ==================== */
+.welcome-mode {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* 对话模式 */
+.chat-mode {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* 模式切换过渡动画 */
+.mode-switch-enter-active,
+.mode-switch-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.mode-switch-enter-from {
+  opacity: 0;
+  transform: translateY(1.5rem);
+}
+
+.mode-switch-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mode-switch-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mode-switch-leave-to {
+  opacity: 0;
+  transform: translateY(-1.5rem);
+}
+
+/* 欢迎模式下的输入框样式调整 */
+.welcome-mode :deep(.input-area) {
+  padding: 0;
+}
+
+.welcome-mode :deep(.input-container) {
+  max-width: 42rem;
+  margin: 0 auto;
+}

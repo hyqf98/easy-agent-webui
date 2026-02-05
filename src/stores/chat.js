@@ -9,6 +9,7 @@ import { chatApi } from '@/api/chat'
 import { modelApi } from '@/api/model'
 import { sessionApi } from '@/api/session'
 import { messageApi } from '@/api/message'
+import { mcpApi } from '@/api/mcp'
 import { ElMessage } from 'element-plus'
 
 export const useChatStore = defineStore('chat', () => {
@@ -22,6 +23,12 @@ export const useChatStore = defineStore('chat', () => {
   const abortController = ref(null)
   const sidebarCollapsed = ref(false)
 
+  // MCP 工具选择器相关状态
+  const mcpConfigs = ref([])           // MCP 配置列表
+  const selectedToolIds = ref([])      // 用户选中的 MCP 配置 ID 列表
+  const mcpLoading = ref(false)        // MCP 列表加载状态
+  const mcpError = ref(null)           // MCP 加载错误信息
+
   // 计算属性
   const currentSession = computed(() => {
     return sessions.value.find(s => s.id === currentSessionId.value)
@@ -30,6 +37,9 @@ export const useChatStore = defineStore('chat', () => {
   const sessionMessages = computed(() => {
     return messages.value.filter(m => m.sessionId === currentSessionId.value)
   })
+
+  // MCP 工具选择器相关计算属性
+  const selectedToolsCount = computed(() => selectedToolIds.value.length)
 
   // 初始化
   async function init() {
@@ -145,6 +155,15 @@ export const useChatStore = defineStore('chat', () => {
         const chunkText = content?.text || ''
         const msgId = `${messageId || requestId || uuidv4()}-${type}`
 
+        // 检测是否为完成标记
+        if (chunkText === '<DONE>') {
+          const existingMsg = messages.value.find(m => m.id === msgId)
+          if (existingMsg) {
+            existingMsg.status = 'completed'
+          }
+          break
+        }
+
         const existingChunkMsg = messages.value.find(m => m.id === msgId)
         if (existingChunkMsg) {
           // 追加内容
@@ -165,17 +184,28 @@ export const useChatStore = defineStore('chat', () => {
         // 深度思考 - 使用 messageId + type 作为唯一标识
         const thinkingText = content?.text || content || ''
         const thinkingMsgId = `${messageId}-${type}`
+
+        // 检测是否为完成标记
+        if (thinkingText === '<DONE>') {
+          const existingMsg = messages.value.find(m => m.id === thinkingMsgId)
+          if (existingMsg) {
+            existingMsg.status = 'completed'
+          }
+          break
+        }
+
         const existingThinking = messages.value.find(m => m.id === thinkingMsgId)
         if (existingThinking) {
           // 追加内容
           existingThinking.content += thinkingText
+          existingThinking.status = 'streaming'
         } else {
           // 新建消息
           addMessage({
             id: thinkingMsgId,
             type: 'thinking',
             content: thinkingText,
-            status: 'completed',
+            status: 'streaming',
           })
         }
         break
@@ -184,6 +214,16 @@ export const useChatStore = defineStore('chat', () => {
         // 工具思考 - 使用 messageId + type 作为唯一标识
         const toolThroughText = content?.text || content || ''
         const toolThroughMsgId = `${messageId}-${type}`
+
+        // 检测是否为完成标记
+        if (toolThroughText === '<DONE>') {
+          const existingMsg = messages.value.find(m => m.id === toolThroughMsgId)
+          if (existingMsg) {
+            existingMsg.status = 'completed'
+          }
+          break
+        }
+
         const existingToolThrough = messages.value.find(m => m.id === toolThroughMsgId)
         if (existingToolThrough) {
           // 追加内容
@@ -204,6 +244,16 @@ export const useChatStore = defineStore('chat', () => {
         // 最终答案 - 使用 messageId + type 作为唯一标识
         const answerText = content?.text || content || ''
         const finalAnswerMsgId = `${messageId}-${type}`
+
+        // 检测是否为完成标记
+        if (answerText === '<DONE>') {
+          const existingMsg = messages.value.find(m => m.id === finalAnswerMsgId)
+          if (existingMsg) {
+            existingMsg.status = 'completed'
+          }
+          break
+        }
+
         const existingMsg = messages.value.find(m => m.id === finalAnswerMsgId)
         if (existingMsg) {
           // 追加内容
@@ -252,6 +302,20 @@ export const useChatStore = defineStore('chat', () => {
           .forEach(m => {
             m.status = 'completed'
           })
+
+        // 检查是否有 final_answer 消息，如果没有则创建一个空的
+        const hasFinalAnswer = messages.value.some(m =>
+          m.id && m.id.startsWith(baseMsgId) && m.type === 'final_answer'
+        )
+        if (!hasFinalAnswer) {
+          addMessage({
+            id: `${baseMsgId}-final_answer`,
+            type: 'final_answer',
+            content: '',
+            status: 'completed',
+          })
+        }
+
         isLoading.value = false
         break
 
@@ -446,6 +510,43 @@ export const useChatStore = defineStore('chat', () => {
     sidebarCollapsed.value = !sidebarCollapsed.value
   }
 
+  // ============ MCP 工具选择器相关方法 ============
+
+  // 加载已启用的 MCP 配置列表
+  async function loadMcpConfigs() {
+    // 移除缓存检查，每次都尝试加载（调试用）
+    // if (mcpLoading.value || mcpConfigs.value.length > 0) return
+
+    mcpLoading.value = true
+    try {
+      const result = await mcpApi.page({ enabled: true, pageSize: 100, pageNum: 1 })
+      console.log('[MCP] API result:', result)
+      console.log('[MCP] records:', result?.records)
+      mcpConfigs.value = result?.records || []
+      console.log('[MCP] mcpConfigs.value:', mcpConfigs.value)
+    } catch (error) {
+      mcpError.value = error.message
+      console.error('Load MCP configs error:', error)
+    } finally {
+      mcpLoading.value = false
+    }
+  }
+
+  // 切换工具选择状态
+  function toggleToolSelection(toolId) {
+    const index = selectedToolIds.value.indexOf(toolId)
+    if (index > -1) {
+      selectedToolIds.value.splice(index, 1)
+    } else {
+      selectedToolIds.value.push(toolId)
+    }
+  }
+
+  // 清空工具选择
+  function clearToolSelection() {
+    selectedToolIds.value = []
+  }
+
   // isSending 别名（用于 InputArea 组件）
   const isSending = computed(() => {
     return isLoading.value
@@ -464,6 +565,12 @@ export const useChatStore = defineStore('chat', () => {
     sessionMessages,
     selectedModel,
     sidebarCollapsed,
+    // MCP 工具选择器状态
+    mcpConfigs,
+    selectedToolIds,
+    mcpLoading,
+    mcpError,
+    selectedToolsCount,
 
     // 方法
     init,
@@ -481,5 +588,9 @@ export const useChatStore = defineStore('chat', () => {
     loadModels,
     setSelectedModel,
     toggleSidebar,
+    // MCP 工具选择器方法
+    loadMcpConfigs,
+    toggleToolSelection,
+    clearToolSelection,
   }
 })

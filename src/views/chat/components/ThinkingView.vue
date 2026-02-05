@@ -1,13 +1,13 @@
 <template>
   <div class="thinking-view message-fade-in">
     <div class="thinking-header">
-      <span class="thinking-icon">
-        <svg width="1.125rem" height="1.125rem" viewBox="0 0 18 18" fill="none" class="thinking-icon-pulse">
+      <span class="thinking-icon" :class="{ streaming: isStreaming }">
+        <svg width="1.125rem" height="1.125rem" viewBox="0 0 18 18" fill="none" :class="{ 'thinking-icon-pulse': isStreaming }">
           <path d="M9 2C5.13 2 2 5.13 2 9C2 12.87 5.13 16 9 16C12.87 16 16 12.87 16 9C16 5.13 12.87 2 9 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           <path d="M9 6V9L11 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </span>
-      <span class="thinking-label">思考中</span>
+      <span class="thinking-label">{{ isStreaming ? '思考中' : '思考完成' }}</span>
     </div>
     <div v-if="content" class="thinking-content">
       {{ content }}
@@ -20,6 +20,10 @@ defineProps({
   content: {
     type: String,
     default: ''
+  },
+  isStreaming: {
+    type: Boolean,
+    default: false
   }
 })
 </script>

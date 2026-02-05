@@ -5,7 +5,7 @@
       <!-- 头部：图标 + 标签 + 收起/展开按钮 -->
       <div class="thought-header" @click="toggleExpanded">
         <span class="thought-icon" :class="{ spinning: isStreaming }">
-          <svg width="0.875rem" height="0.875rem" viewBox="0 0 18 18" fill="none">
+          <svg width="0.875rem" height="0.875rem" viewBox="0 0 18 18" fill="none" :class="{ 'gear-spin': isStreaming }">
             <path d="M9 2L11 5L15 4.5L13.5 8L17 9.5L13.5 11L15 14.5L11 14L9 17L7 14L3 14.5L4.5 11L1 9.5L4.5 8L3 4.5L7 5L9 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </span>
@@ -89,8 +89,8 @@ const toggleExpanded = () => {
   color: var(--accent-primary);
 }
 
-/* 齿轮转动动画 */
-.thought-icon.spinning {
+/* 齿轮转动动画 - 仅在流式状态时旋转 */
+.thought-icon.spinning .gear-spin {
   animation: spin 2s linear infinite;
 }
 

@@ -19,10 +19,11 @@
           :content="content"
           :typing="isStreaming ? { step: 1, interval: 30 } : false"
           :is-markdown="true"
+          :is-streaming="isStreaming"
           class="markdown-content"
         />
-        <!-- 空状态占位符 -->
-        <div v-else class="empty-placeholder">
+        <!-- 空状态占位符 - 仅在流式状态时显示 -->
+        <div v-else-if="isStreaming" class="empty-placeholder">
           <span class="loading-dot"></span>
           <span class="loading-dot"></span>
           <span class="loading-dot"></span>

@@ -47,11 +47,21 @@
         </div>
       </div>
 
-      <!-- 消息列表 -->
-      <MessageList />
+      <!-- 欢迎模式 -->
+      <Transition name="mode-switch" mode="out-in">
+        <!-- 欢迎模式：居中显示 -->
+        <div v-if="isWelcomeMode" key="welcome" class="welcome-mode">
+          <WelcomeView>
+            <InputArea />
+          </WelcomeView>
+        </div>
 
-      <!-- 输入区域 -->
-      <InputArea />
+        <!-- 对话模式：消息列表 + 底部输入框 -->
+        <div v-else key="chat" class="chat-mode">
+          <MessageList />
+          <InputArea />
+        </div>
+      </Transition>
     </div>
   </div>
 </template>
@@ -62,6 +72,7 @@ import { useChatStore } from '@/stores/chat'
 import SessionList from './components/SessionList.vue'
 import MessageList from './components/MessageList.vue'
 import InputArea from './components/InputArea.vue'
+import WelcomeView from './components/WelcomeView.vue'
 
 const chatStore = useChatStore()
 
@@ -71,6 +82,11 @@ const models = computed(() => chatStore.models)
 const selectedModelId = computed({
   get: () => chatStore.selectedModelId,
   set: (val) => chatStore.setSelectedModel(val)
+})
+
+// 判断是否处于欢迎模式（当前会话无消息）
+const isWelcomeMode = computed(() => {
+  return chatStore.sessionMessages.length === 0
 })
 
 const currentSessionTitle = computed(() => {

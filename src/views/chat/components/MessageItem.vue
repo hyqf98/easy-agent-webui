@@ -14,6 +14,7 @@
     <ThinkingView
       v-else-if="message.type === 'thinking'"
       :content="message.content"
+      :is-streaming="message.status === 'streaming'"
     />
 
     <!-- 工具思考消息 -->
