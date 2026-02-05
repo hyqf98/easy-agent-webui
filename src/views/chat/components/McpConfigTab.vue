@@ -2,123 +2,222 @@
   <div class="mcp-config-tab">
     <!-- 搜索和操作栏 -->
     <div class="toolbar">
-      <el-input
-        v-model="searchKeyword"
-        placeholder="搜索服务器名称"
-        :prefix-icon="Search"
-        clearable
-        class="search-input"
-        @input="handleSearch"
-      />
+      <div class="search-section">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索服务器名称..."
+          clearable
+          class="search-input"
+          @input="handleSearch"
+        >
+          <template #prefix>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="search-icon">
+              <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M11 11L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </template>
+        </el-input>
 
-      <el-select
-        v-model="filterConnectionType"
-        placeholder="连接类型"
-        clearable
-        class="filter-select"
-        @change="handleSearch"
-      >
-        <el-option label="STDIO" value="STDIO" />
-        <el-option label="SSE" value="SSE" />
-      </el-select>
+        <el-select
+          v-model="filterConnectionType"
+          placeholder="连接类型"
+          clearable
+          class="filter-select"
+          @change="handleSearch"
+        >
+          <el-option label="STDIO" value="stdio" />
+          <el-option label="SSE" value="sse" />
+          <el-option label="HTTP" value="http_stream" />
+        </el-select>
 
-      <el-select
-        v-model="filterEnabled"
-        placeholder="启用状态"
-        clearable
-        class="filter-select"
-        @change="handleSearch"
-      >
-        <el-option label="已启用" :value="true" />
-        <el-option label="已禁用" :value="false" />
-      </el-select>
+        <el-select
+          v-model="filterEnabled"
+          placeholder="状态"
+          clearable
+          class="status-select"
+          @change="handleSearch"
+        >
+          <el-option label="已启用" :value="true" />
+          <el-option label="已禁用" :value="false" />
+        </el-select>
+      </div>
 
       <div class="toolbar-actions">
-        <el-button type="primary" @click="handleAdd">
-          <el-icon><Plus /></el-icon>
-          新增
-        </el-button>
-        <el-button
-          type="danger"
-          :disabled="selectedIds.length === 0"
-          @click="handleBatchDelete"
-        >
-          批量删除
+        <el-button type="primary" class="add-btn" @click="handleAdd">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          新增服务
         </el-button>
       </div>
     </div>
 
-    <!-- 数据表格 -->
-    <el-table
-      v-loading="loading"
-      :data="tableData"
-      stripe
-      class="data-table"
-      @selection-change="handleSelectionChange"
-    >
-      <el-table-column type="selection" width="3rem" />
+    <!-- 统计信息 -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-label">总计</span>
+        <span class="stat-value">{{ total }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">已启用</span>
+        <span class="stat-value enabled">{{ enabledCount }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">STDIO</span>
+        <span class="stat-value stdio">{{ stdioCount }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">SSE</span>
+        <span class="stat-value sse">{{ sseCount }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">HTTP</span>
+        <span class="stat-value httpstream">{{ httpStreamCount }}</span>
+      </div>
+    </div>
 
-      <el-table-column prop="serverName" label="服务器名称" min-width="9rem" />
-
-      <el-table-column prop="serverDesc" label="描述" min-width="12rem" />
-
-      <el-table-column prop="connectionTypeDesc" label="连接类型" min-width="6rem" />
-
-      <el-table-column label="状态" width="6.5rem">
-        <template #default="{ row }">
-          <div class="status-cell">
-            <span
-              class="status-dot"
-              :class="{ active: row.enabled }"
-            />
-            <span>{{ row.enabled ? '已启用' : '已禁用' }}</span>
+    <!-- 卡片网格 -->
+    <div v-loading="loading" class="card-grid">
+      <div
+        v-for="item in tableData"
+        :key="item.id"
+        class="mcp-card"
+        :class="{ disabled: !item.enabled }"
+      >
+        <!-- 卡片头部 -->
+        <div class="card-header">
+          <div class="mcp-icon" :class="`type-${item.connectionType}`">
+            <svg v-if="item.connectionType === 'stdio'" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M4 6H20M4 12H20M4 18H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M18 18L22 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M12 8V12L15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M2 12H4M20 12H22M12 2V4M12 20V22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
           </div>
-        </template>
-      </el-table-column>
+          <div class="header-info">
+            <div class="server-name">{{ item.serverName }}</div>
+            <div class="server-desc">{{ item.serverDesc || '无描述' }}</div>
+          </div>
+          <div class="card-badges">
+            <span
+              class="badge badge-type"
+              :class="`type-${item.connectionType}`"
+            >
+              {{ item.connectionType }}
+            </span>
+            <span
+              class="badge badge-status"
+              :class="item.enabled ? 'enabled' : 'disabled'"
+            >
+              {{ item.enabled ? '启用' : '禁用' }}
+            </span>
+          </div>
+        </div>
 
-      <el-table-column label="操作" width="18.75rem" fixed="right">
-        <template #default="{ row }">
-          <el-button
-            link
-            type="primary"
-            :loading="testing[row.id]"
-            @click="handleTestConnection(row)"
+        <!-- 卡片内容 -->
+        <div class="card-body">
+          <!-- STDIO类型：显示命令和参数 -->
+          <template v-if="item.connectionType === 'stdio'">
+            <div class="info-row">
+              <span class="info-label">命令</span>
+              <span class="info-value mono">{{ item.command || '-' }}</span>
+            </div>
+            <div v-if="item.commandArgs" class="info-row">
+              <span class="info-label">参数</span>
+              <span class="info-value mono args">{{ item.commandArgs }}</span>
+            </div>
+          </template>
+
+          <!-- SSE类型：显示URL和端点 -->
+          <template v-else-if="item.connectionType === 'sse'">
+            <div class="info-row">
+              <span class="info-label">URL</span>
+              <span class="info-value mono">{{ item.serverUrl || '-' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">端点</span>
+              <span class="info-value">{{ item.serverEndpoint || '/' }}</span>
+            </div>
+          </template>
+
+          <!-- HTTP_STREAM类型：显示URL -->
+          <template v-else-if="item.connectionType === 'http_stream'">
+            <div class="info-row">
+              <span class="info-label">URL</span>
+              <span class="info-value mono">{{ item.serverUrl || '-' }}</span>
+            </div>
+          </template>
+
+          <!-- 其他类型：显示URL -->
+          <template v-else>
+            <div class="info-row">
+              <span class="info-label">URL</span>
+              <span class="info-value mono">{{ item.serverUrl || '-' }}</span>
+            </div>
+          </template>
+        </div>
+
+        <!-- 卡片操作 -->
+        <div class="card-actions">
+          <button
+            class="action-btn"
+            :class="{ testing: testing[item.id], success: connectionStatus[item.id] === 'success' }"
+            @click="handleTestConnection(item)"
           >
-            <template v-if="testing[row.id]">
-              <span class="testing-icon spinning">
-                <svg width="0.875rem" height="0.875rem" viewBox="0 0 18 18" fill="none">
-                  <path d="M9 2L11 5L15 4.5L13.5 8L17 9.5L13.5 11L15 14.5L11 14L9 17L7 14L3 14.5L4.5 11L1 9.5L4.5 8L3 4.5L7 5L9 2Z" stroke="currentColor" stroke-width="1.5"/>
-                </svg>
-              </span>
-              测试中
-            </template>
-            <template v-else>
-              <span :class="connectionStatus[row.id]">
-                {{ connectionStatus[row.id] === 'success' ? '连接成功' : '测试连接' }}
-              </span>
-            </template>
-          </el-button>
-          <el-button link type="primary" @click="handleViewDetails(row)">
-            查看详情
-          </el-button>
-          <el-button link type="primary" @click="handleEdit(row)">
+            <svg v-if="!testing[item.id] && connectionStatus[item.id] !== 'success'" width="12" height="12" viewBox="0 0 14 14" fill="none">
+              <path d="M7 2L9 5H12.5L10 8L11 12L7 10L3 12L4 8L1.5 5H5L7 2Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <svg v-else-if="connectionStatus[item.id] === 'success'" width="12" height="12" viewBox="0 0 14 14" fill="none">
+              <path d="M3 7L5.5 9.5L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <svg v-else width="12" height="12" viewBox="0 0 14 14" fill="none" class="spinning">
+              <path d="M7 2C4.23858 2 2 4.23858 2 7C2 9.76142 4.23858 12 7 12C9.76142 12 12 9.76142 12 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            {{ testing[item.id] ? '测试中' : connectionStatus[item.id] === 'success' ? '成功' : '测试' }}
+          </button>
+          <button class="action-btn" @click="handleViewDetails(item)">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+              <path d="M2 2H12V12H2V2Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <path d="M5 5H9M5 7H9M5 9H7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            详情
+          </button>
+          <button class="action-btn" @click="handleEdit(item)">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+              <path d="M2 11.5H12M2 11.5V7.5L9 0.5L12.5 4L5.5 11H2V11.5Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
             编辑
-          </el-button>
-          <el-button link type="danger" @click="handleDelete(row)">
+          </button>
+          <button class="action-btn danger" @click="handleDelete(item)">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+              <path d="M3 4H11M4 4V11C4 11.55 4.45 12 5 12H9C9.55 12 10 11.55 10 11V4M5 4V3C5 2.45 5.45 2 6 2H8C8.55 2 9 2.45 9 3V4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
             删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+          </button>
+        </div>
+      </div>
+
+      <!-- 空状态 -->
+      <div v-if="!loading && tableData.length === 0" class="empty-state">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <rect x="8" y="8" width="48" height="48" rx="4" stroke="currentColor" stroke-width="2"/>
+          <path d="M20 32H44M32 20V44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <p>暂无MCP配置</p>
+      </div>
+    </div>
 
     <!-- 分页器 -->
-    <div class="pagination">
+    <div v-if="total > pageSize" class="pagination">
       <el-pagination
         v-model:current-page="pageNum"
         v-model:page-size="pageSize"
         :total="total"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
+        :page-sizes="[12, 24, 48]"
+        layout="total, sizes, prev, pager, next"
         @current-change="handlePageChange"
         @size-change="handleSizeChange"
       />
@@ -141,9 +240,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Plus } from '@element-plus/icons-vue'
 import { mcpApi } from '@/api/mcp.js'
 import McpFormDialog from './McpFormDialog.vue'
 import McpDetailDrawer from './McpDetailDrawer.vue'
@@ -155,15 +253,18 @@ const loading = ref(false)
 const tableData = ref([])
 const total = ref(0)
 const pageNum = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(12)
 
 // 搜索和筛选
 const searchKeyword = ref('')
 const filterConnectionType = ref('')
 const filterEnabled = ref(null)
 
-// 选中项
-const selectedIds = ref([])
+// 统计数据
+const enabledCount = computed(() => tableData.value.filter(item => item.enabled).length)
+const stdioCount = computed(() => tableData.value.filter(item => item.connectionType === 'stdio').length)
+const sseCount = computed(() => tableData.value.filter(item => item.connectionType === 'sse').length)
+const httpStreamCount = computed(() => tableData.value.filter(item => item.connectionType === 'http_stream').length)
 
 // 表单对话框
 const formDialogVisible = ref(false)
@@ -177,6 +278,7 @@ const selectedMcpId = ref(null)
 // 连接测试状态
 const testing = ref({})
 const connectionStatus = ref({})
+
 
 // 加载数据
 const loadData = async () => {
@@ -223,11 +325,6 @@ const handleSizeChange = () => {
   loadData()
 }
 
-// 选中变化
-const handleSelectionChange = (selection) => {
-  selectedIds.value = selection.map(item => item.id)
-}
-
 // 新增
 const handleAdd = () => {
   formMode.value = 'add'
@@ -259,17 +356,18 @@ const handleTestConnection = async (row) => {
     connectionStatus.value[row.id] = 'success'
     ElMessage.success('连接成功')
 
-    // 2秒后重置状态
+    // 3秒后重置状态
     setTimeout(() => {
       connectionStatus.value[row.id] = ''
-    }, 2000)
+    }, 3000)
   } catch (error) {
     connectionStatus.value[row.id] = 'error'
-    ElMessage.error('连接失败: ' + error.message)
+    // 直接显示后端返回的错误消息，不再添加前缀
+    ElMessage.error(error.message || '连接失败')
 
     setTimeout(() => {
       connectionStatus.value[row.id] = ''
-    }, 2000)
+    }, 3000)
   } finally {
     testing.value[row.id] = false
   }
@@ -301,27 +399,6 @@ const handleDelete = async (row) => {
   }
 }
 
-// 批量删除
-const handleBatchDelete = async () => {
-  try {
-    await ElMessageBox.confirm(
-      `确认要删除选中的 ${selectedIds.value.length} 条配置吗？`,
-      '警告',
-      { type: 'warning' }
-    )
-
-    await mcpApi.remove(selectedIds.value)
-    ElMessage.success('删除成功')
-    selectedIds.value = []
-    loadData()
-    emit('refresh')
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('删除失败: ' + error.message)
-    }
-  }
-}
-
 onMounted(() => {
   loadData()
 })
@@ -334,71 +411,378 @@ onMounted(() => {
   gap: 1rem;
 }
 
+/* 工具栏 */
 .toolbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.search-section {
+  display: flex;
+  align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+  margin-right: 0.5rem;
 }
 
 .search-input {
   width: 16rem;
+  flex-shrink: 0;
+}
+
+:deep(.el-input__wrapper) {
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 1px var(--border-default) inset;
+  padding: 0.5rem 0.75rem;
+}
+
+:deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--border-strong) inset;
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px var(--accent-primary) inset;
+}
+
+.search-icon {
+  color: var(--text-tertiary);
 }
 
 .filter-select {
-  width: 9rem;
+  width: 10rem;
+  flex-shrink: 0;
+}
+
+:deep(.filter-select .el-input__wrapper) {
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 1px var(--border-default) inset;
+  padding: 0.5rem 0.75rem;
+}
+
+:deep(.filter-select .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--border-strong) inset;
+}
+
+:deep(.filter-select .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px var(--accent-primary) inset;
+}
+
+.status-select {
+  width: 5rem;
+  flex-shrink: 0;
+}
+
+:deep(.status-select .el-input__wrapper) {
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 1px var(--border-default) inset;
+  padding: 0.5rem 0.75rem;
+}
+
+:deep(.status-select .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--border-strong) inset;
+}
+
+:deep(.status-select .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px var(--accent-primary) inset;
 }
 
 .toolbar-actions {
-  margin-left: auto;
   display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-lg);
+  padding: 0.625rem 1rem;
+  font-weight: 500;
+  background: #7c9a6d;
+  border-color: #6a8549;
+}
+
+.add-btn:hover {
+  background: #6a8549;
+  border-color: #5d7440;
+}
+
+/* 统计栏 */
+.stats-bar {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.875rem 1rem;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
-.data-table {
-  border-radius: var(--radius-md);
-  overflow: hidden;
+.stat-label {
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
 }
 
-:deep(.el-table__header) {
-  background: var(--bg-secondary);
+.stat-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-:deep(.el-table__body tr) {
-  transition: background 0.2s;
+.stat-value.enabled {
+  color: var(--color-success);
 }
 
-:deep(.el-table__body tr:hover > td) {
-  background: var(--bg-hover) !important;
+.stat-value.stdio {
+  color: #3b82f6;
 }
 
-:deep(.el-table__body tr.el-table__row--striped > td) {
-  background: rgba(0, 0, 0, 0.02);
+.stat-value.sse {
+  color: #8b5cf6;
 }
 
-.status-cell {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
+.stat-value.httpstream {
+  color: #f59e0b;
 }
 
-.status-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
+/* 卡片网格 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0.75rem;
+  max-height: 22rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* 卡片网格滚动条美化 */
+.card-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-grid::-webkit-scrollbar-track {
+  background: var(--bg-hover);
+  border-radius: var(--radius-full);
+}
+
+.card-grid::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-full);
+}
+
+.card-grid::-webkit-scrollbar-thumb:hover {
   background: var(--text-tertiary);
 }
 
-.status-dot.active {
-  background: var(--color-success);
+/* MCP卡片 */
+.mcp-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: var(--transition-base);
+  display: flex;
+  flex-direction: column;
 }
 
-.testing-icon {
-  display: inline-flex;
+.mcp-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.mcp-card.disabled {
+  opacity: 0.7;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-secondary) 100%);
+}
+
+.mcp-icon {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: white;
 }
 
-.testing-icon.spinning svg {
+.mcp-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mcp-icon.type-stdio {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.mcp-icon.type-sse {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.mcp-icon.type-http_stream {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.server-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.server-desc {
+  font-size: 0.6875rem;
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-badges {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.badge {
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-full);
+  font-size: 0.625rem;
+  font-weight: 500;
+}
+
+.badge-type.type-stdio {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.badge-type.type-sse {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+}
+
+.badge-type.type-http_stream {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.badge-status.enabled {
+  background: rgba(52, 211, 153, 0.15);
+  color: var(--color-success);
+}
+
+.badge-status.disabled {
+  background: var(--bg-hover);
+  color: var(--text-tertiary);
+}
+
+.card-body {
+  padding: 0.625rem 0.75rem;
+  flex: 1;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.info-label {
+  font-size: 0.6875rem;
+  color: var(--text-tertiary);
+}
+
+.info-value {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 10rem;
+}
+
+.info-value.mono {
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+  font-size: 0.6875rem;
+}
+
+.info-value.mono.args {
+  color: var(--accent-primary);
+  font-size: 0.625rem;
+}
+
+.connection-status {
+  margin-top: 0.375rem;
+}
+
+.test-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.5rem;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.test-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.test-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.test-btn.testing {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.test-btn.success {
+  background: rgba(52, 211, 153, 0.1);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+svg.spinning {
   animation: spin 1s linear infinite;
 }
 
@@ -411,13 +795,90 @@ onMounted(() => {
   }
 }
 
-.connection-status-success {
-  color: var(--color-success);
+.card-actions {
+  display: flex;
+  padding: 0.5rem 0.75rem;
+  gap: 0.375rem;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
 }
 
+.action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.action-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.action-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.action-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+/* 空状态 */
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: var(--text-tertiary);
+}
+
+.empty-state svg {
+  margin-bottom: 1rem;
+  opacity: 0.4;
+}
+
+.empty-state p {
+  font-size: 0.9375rem;
+  margin-bottom: 0;
+}
+
+/* 分页 */
 .pagination {
   display: flex;
-  justify-content: flex-end;
-  padding: 0.75rem 0;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+:deep(.el-pagination) {
+  gap: 0.25rem;
+}
+
+:deep(.el-pagination .btn-prev),
+:deep(.el-pagination .btn-next),
+:deep(.el-pagination .el-pager li) {
+  border-radius: var(--radius-md);
+  min-width: 2rem;
+  height: 2rem;
+  line-height: 2rem;
+}
+
+:deep(.el-pagination .el-pager li.is-active) {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
 }
 </style>

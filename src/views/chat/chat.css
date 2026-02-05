@@ -88,93 +88,55 @@
 /* ==================== 模型选择器 ==================== */
 .model-selector-wrapper {
   flex-shrink: 0;
-  width: 11rem;
+  width: 14rem;
 }
 
 .model-select {
   width: 100%;
 }
 
-/* 输入框容器 - 精致边框设计 */
+/* 输入框容器 */
 .model-select :deep(.el-input__wrapper) {
   background: #ffffff;
-  border: 1.5px solid #e8e4dc;
-  border-radius: 0.625rem;
-  padding: 0.5rem 0.625rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 0.75rem;
+  box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
-  min-height: 2.25rem;
+  min-height: 2.5rem;
 }
 
 .model-select :deep(.el-input__wrapper:hover) {
-  border-color: #d4cfc5;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-md);
 }
 
 .model-select :deep(.el-input__wrapper.is-focus) {
-  border-color: #7c9a6d;
-  box-shadow: 0 0 0 3px rgba(124, 154, 109, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(124, 154, 109, 0.1);
 }
 
 /* 输入框文字 */
 .model-select :deep(.el-input__inner) {
-  font-size: 0.8125rem;
-  color: #2d2a26;
+  font-size: 0.875rem;
+  color: var(--text-primary);
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.5;
+}
+
+.model-select :deep(.el-input__inner::placeholder) {
+  color: var(--text-tertiary);
+  font-weight: 400;
 }
 
 /* 后缀图标 */
 .model-select :deep(.el-input__suffix) {
-  color: #9a958e;
+  color: var(--accent-primary);
 }
 
 .model-select :deep(.el-input__suffix-inner) {
   display: flex;
   align-items: center;
-}
-
-/* 下拉面板 - 美化设计 */
-.model-select :deep(.el-select-dropdown) {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.04);
-  border-radius: 0.75rem;
-  padding: 0.375rem;
-  margin-top: 0.25rem;
-}
-
-/* 选项容器 */
-.model-select :deep(.el-select-dropdown__list) {
-  padding: 0;
-}
-
-/* 单个选项 - 优化间距和圆角 */
-.model-select :deep(.el-select-dropdown__item) {
-  padding: 0.625rem 0.75rem;
-  margin-bottom: 0.125rem;
-  border-radius: 0.5rem;
-  color: #2d2a26;
-  font-size: 0.8125rem;
-  transition: all 0.15s ease;
-}
-
-.model-select :deep(.el-select-dropdown__item:last-child) {
-  margin-bottom: 0;
-}
-
-.model-select :deep(.el-select-dropdown__item:hover) {
-  background: #f7f4ef;
-}
-
-.model-select :deep(.el-select-dropdown__item.is-selected) {
-  background: #e8efe3;
-  color: #6a8549;
-  font-weight: 500;
-}
-
-.model-select :deep(.el-select-dropdown__item.is-selected:hover) {
-  background: #d5dfc8;
 }
 
 /* 选项内容布局 */
@@ -187,7 +149,7 @@
 }
 
 .model-name {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: inherit;
   font-weight: 500;
   flex: 1;
@@ -197,20 +159,14 @@
 }
 
 .model-provider {
-  font-size: 0.6875rem;
-  color: #9a958e;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
   padding: 0.125rem 0.375rem;
-  background: #f1ede6;
-  border-radius: 0.375rem;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
   font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;
-}
-
-/* 选中状态下的提供商标签 */
-.model-select :deep(.el-select-dropdown__item.is-selected) .model-provider {
-  background: #7c9a6d;
-  color: #ffffff;
 }
 
 /* 消息容器动画 */

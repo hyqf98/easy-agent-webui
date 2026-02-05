@@ -21,9 +21,9 @@
           <div class="model-selector-wrapper">
             <el-select
               v-model="selectedModelId"
-              placeholder="选择模型"
-              size="small"
+              placeholder="选择 AI 模型"
               class="model-select"
+              popper-class="model-select-dropdown"
               @change="handleModelChange"
             >
               <el-option

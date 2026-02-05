@@ -3,16 +3,16 @@
     <div class="session-list-header">
       <div class="header-content">
         <h2 class="session-list-title">对话</h2>
-        <div class="header-actions">
-          <button class="icon-btn" title="系统配置" @click="handleOpenConfig">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 2.5C5 2.5 2.5 5 2.5 8C2.5 11 5 13.5 8 13.5C11 13.5 13.5 11 13.5 8C13.5 5 11 2.5 8 2.5Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-              <path d="M8 5.5V8L10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <span class="session-count">{{ sessions.length }}</span>
-        </div>
+        <span class="session-count">{{ sessions.length }}</span>
       </div>
+      <button class="new-session-btn" @click="createNewSession">
+        <span class="btn-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span>新建对话</span>
+      </button>
     </div>
 
     <div class="session-list-items">
@@ -38,13 +38,14 @@
     </div>
 
     <div class="session-list-footer">
-      <button class="new-session-btn" @click="createNewSession">
-        <span class="btn-icon">
+      <button class="settings-btn" @click="handleOpenConfig" title="系统配置">
+        <span class="settings-icon">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M9 4.5V13.5M4.5 9H13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="9" cy="9" r="3.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M9 1.5V3.5M9 14.5V16.5M16.5 9H14.5M3.5 9H1.5M14.65 3.35L13.23 4.77M4.77 13.23L3.35 14.65M14.65 14.65L13.23 13.23M4.77 4.77L3.35 3.35" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
           </svg>
         </span>
-        <span>新建对话</span>
+        <span>系统设置</span>
       </button>
     </div>
 
@@ -213,8 +214,11 @@ const formatTime = (timestamp) => {
 
 /* 会话列表头部 */
 .session-list-header {
-  padding: 1rem 1rem;
+  padding: 1rem;
   border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .header-content {
@@ -223,31 +227,6 @@ const formatTime = (timestamp) => {
   gap: 0.5rem;
   justify-content: space-between;
   width: 100%;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-md);
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition: var(--transition-base);
-}
-
-.icon-btn:hover {
-  background: var(--bg-hover);
-  color: var(--accent-primary);
 }
 
 .session-list-title {
@@ -263,8 +242,39 @@ const formatTime = (timestamp) => {
   font-weight: 500;
   color: var(--text-tertiary);
   background: var(--bg-hover);
-  padding: 0.125rem 0.375rem;
+  padding: 0.125rem 0.5rem;
   border-radius: var(--radius-full);
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+/* 新建对话按钮 - 头部样式 */
+.new-session-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.new-session-btn:hover {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.new-session-btn:active {
+  transform: translateY(0);
 }
 
 .session-list-items {
@@ -354,42 +364,49 @@ const formatTime = (timestamp) => {
 }
 
 .session-list-footer {
-  padding: 0.875rem;
+  padding: 0.875rem 1rem 1rem;
   border-top: 1px solid var(--border-subtle);
 }
 
-.new-session-btn {
+/* 设置按钮 - 底部样式 */
+.settings-btn {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
   padding: 0.75rem 1rem;
-  background: var(--accent-primary);
-  color: var(--text-inverse);
-  border: none;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition-base);
+}
+
+.settings-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
   box-shadow: var(--shadow-sm);
 }
 
-.new-session-btn:hover {
-  background: var(--accent-hover);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+.settings-btn:active {
+  transform: scale(0.98);
 }
 
-.new-session-btn:active {
-  transform: translateY(0);
-}
-
-.btn-icon {
+.settings-icon {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-tertiary);
+  transition: var(--transition-base);
+}
+
+.settings-btn:hover .settings-icon {
+  color: var(--accent-primary);
 }
 </style>
 

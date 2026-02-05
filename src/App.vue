@@ -123,4 +123,45 @@ html, body {
   background: var(--accent-subtle);
   color: var(--text-primary);
 }
+
+/* ==================== 模型选择器下拉面板全局样式 ==================== */
+.model-select-dropdown.el-select-dropdown {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-lg);
+  padding: 0.375rem;
+  margin-top: 0.375rem;
+  max-height: 300px;
+}
+
+.model-select-dropdown .el-select-dropdown__list {
+  padding: 0;
+}
+
+.model-select-dropdown .el-select-dropdown__item {
+  padding: 0.625rem 0.75rem;
+  margin-bottom: 0.25rem;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background: transparent;
+  height: auto;
+  line-height: 1.5;
+}
+
+.model-select-dropdown .el-select-dropdown__item:last-child {
+  margin-bottom: 0;
+}
+
+.model-select-dropdown .el-select-dropdown__item:hover {
+  background: var(--bg-hover);
+}
+
+.model-select-dropdown .el-select-dropdown__item.is-selected {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  font-weight: 600;
+}
 </style>

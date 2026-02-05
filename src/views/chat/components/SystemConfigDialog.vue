@@ -2,7 +2,7 @@
   <el-dialog
     v-model="dialogVisible"
     title="系统配置"
-    width="56.25rem"
+    width="46rem"
     :close-on-click-modal="false"
     class="system-config-dialog"
     @close="handleClose"
@@ -64,25 +64,39 @@ const handleRefresh = () => {
 }
 
 .config-tabs {
-  min-height: 37.5rem;
+  height: 36rem;
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.el-tabs__content) {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+:deep(.el-tab-pane) {
+  height: 100%;
+  overflow: hidden;
 }
 
 :deep(.el-dialog__header) {
-  padding: 1rem 1.25rem;
+  padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--border-subtle);
 }
 
 :deep(.el-dialog__body) {
-  padding: 1.25rem;
+  padding: 1rem;
+  max-height: 42rem;
 }
 
 :deep(.el-dialog__footer) {
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1rem;
   border-top: 1px solid var(--border-subtle);
 }
 
 :deep(.el-tabs__header) {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 :deep(.el-tabs__nav-wrap::after) {
@@ -90,8 +104,9 @@ const handleRefresh = () => {
 }
 
 :deep(.el-tabs__item) {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: var(--text-tertiary);
+  padding: 0 1rem;
 }
 
 :deep(.el-tabs__item.is-active) {
