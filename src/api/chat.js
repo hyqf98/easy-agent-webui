@@ -122,8 +122,52 @@ export async function getTools() {
   return response.json()
 }
 
+/**
+ * 上传文件
+ * @param {File} file - 要上传的文件
+ * @param {string} sessionId - 会话ID
+ * @returns {Promise<Object>} 文件信息（包含相对路径）
+ */
+export async function uploadFile(file, sessionId) {
+  const baseURL = getBaseURL()
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('sessionId', sessionId)
+
+  const response = await fetch(`${baseURL}/file/upload`, {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
+
+  const result = await response.json()
+  // 后端返回 Result 包装对象，需要从 data 字段获取实际数据
+  return result.data
+}
+
+/**
+ * 删除文件
+ * @param {string} path - 文件相对路径
+ * @returns {Promise<void>}
+ */
+export async function deleteFile(path) {
+  const baseURL = getBaseURL()
+  const response = await fetch(`${baseURL}/file/delete?path=${encodeURIComponent(path)}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
+}
+
 export const chatApi = {
   streamChat,
   getModels,
   getTools,
+  uploadFile,
+  deleteFile,
 }

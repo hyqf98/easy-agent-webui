@@ -104,15 +104,14 @@
       <el-tab-pane label="工具列表" name="tools">
         <div v-loading="loading.tools" class="tab-content">
           <el-table :data="tools" stripe>
-            <el-table-column prop="name" label="工具名称" min-width="14rem" align="center" />
-            <el-table-column prop="description" label="描述" min-width="20rem" align="center" show-overflow-tooltip />
-            <el-table-column label="操作" width="6rem" align="center">
+            <el-table-column prop="name" label="工具名称" min-width="15rem" align="center" />
+            <el-table-column prop="description" label="描述" min-width="15rem" align="center" show-overflow-tooltip />
+            <el-table-column label="操作" min-width="15rem" align="center">
               <template #default="{ row }">
-                <el-button
-                  link
-                  type="primary"
-                  @click="copyToClipboard(row.name)"
-                >
+                <el-button link type="primary" @click="openTestToolDialog(row)">
+                  测试
+                </el-button>
+                <el-button link type="primary" @click="copyToClipboard(row.name)">
                   复制
                 </el-button>
               </template>
@@ -125,15 +124,12 @@
       <el-tab-pane label="资源列表" name="resources">
         <div v-loading="loading.resources" class="tab-content">
           <el-table :data="resources" stripe>
-            <el-table-column prop="uri" label="资源URI" min-width="18rem" align="center" show-overflow-tooltip />
-            <el-table-column prop="name" label="名称" min-width="12rem" align="center" />
-            <el-table-column label="操作" width="6rem" align="center">
+            <el-table-column prop="uri" label="资源URI" min-width="15rem" align="center" show-overflow-tooltip />
+            <el-table-column prop="name" label="名称" min-width="15rem" align="center" />
+            <el-table-column label="描述" min-width="15rem" align="center" show-overflow-tooltip />
+            <el-table-column label="操作" min-width="15rem" align="center">
               <template #default="{ row }">
-                <el-button
-                  link
-                  type="primary"
-                  @click="copyToClipboard(row.uri)"
-                >
+                <el-button link type="primary" @click="copyToClipboard(row.uri)">
                   复制
                 </el-button>
               </template>
@@ -146,15 +142,11 @@
       <el-tab-pane label="提示词列表" name="prompts">
         <div v-loading="loading.prompts" class="tab-content">
           <el-table :data="prompts" stripe>
-            <el-table-column prop="name" label="提示词名称" min-width="14rem" align="center" />
-            <el-table-column prop="description" label="描述" min-width="20rem" align="center" show-overflow-tooltip />
-            <el-table-column label="操作" width="6rem" align="center">
+            <el-table-column prop="name" label="提示词名称" min-width="15rem" align="center" />
+            <el-table-column prop="description" label="描述" min-width="15rem" align="center" show-overflow-tooltip />
+            <el-table-column label="操作" min-width="15rem" align="center">
               <template #default="{ row }">
-                <el-button
-                  link
-                  type="primary"
-                  @click="copyToClipboard(row.name)"
-                >
+                <el-button link type="primary" @click="copyToClipboard(row.name)">
                   复制
                 </el-button>
               </template>
@@ -164,6 +156,45 @@
         </div>
       </el-tab-pane>
     </el-tabs>
+
+    <!-- 测试工具弹框 -->
+    <el-dialog
+      v-model="testToolVisible"
+      title="测试MCP工具"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form label-width="100px">
+        <el-form-item label="MCP服务器">
+          <span>{{ mcpData?.serverName || '-' }}</span>
+        </el-form-item>
+        <el-form-item label="工具名称">
+          <span>{{ currentTool?.name || '-' }}</span>
+        </el-form-item>
+        <el-form-item label="工具描述">
+          <span>{{ currentTool?.description || '-' }}</span>
+        </el-form-item>
+        <el-form-item label="输入参数">
+          <el-input
+            v-model="testToolParams"
+            type="textarea"
+            :rows="8"
+            placeholder='请输入JSON格式的参数，例如：{"path": "/path/to/file"}'
+          />
+          <div class="param-hint">提示：输入Schema为 {{ currentTool?.inputSchema || '{}' }}</div>
+        </el-form-item>
+        <el-form-item label="执行结果">
+          <div v-if="testToolResult" class="result-box">
+            <pre>{{ testToolResult }}</pre>
+          </div>
+          <div v-else class="result-placeholder">执行后显示结果</div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="testToolVisible = false">取消</el-button>
+        <el-button type="primary" :loading="testToolLoading" @click="testTool">执行</el-button>
+      </template>
+    </el-dialog>
   </el-drawer>
 </template>
 
@@ -204,6 +235,20 @@ const loading = ref({
   prompts: false
 })
 
+// 数据加载标记（避免重复加载）
+const loaded = ref({
+  tools: false,
+  resources: false,
+  prompts: false
+})
+
+// 测试工具相关
+const testToolVisible = ref(false)
+const testToolLoading = ref(false)
+const currentTool = ref(null)
+const testToolParams = ref('')
+const testToolResult = ref('')
+
 // 加载MCP配置详情
 const loadMcpData = async () => {
   if (!props.mcpId) return
@@ -219,58 +264,94 @@ const loadMcpData = async () => {
 
 // 加载数据
 const loadTools = async () => {
-  if (!props.mcpId) return
+  if (!props.mcpId || loaded.value.tools) return
 
   loading.value.tools = true
   try {
     const data = await mcpApi.listTools(props.mcpId)
     tools.value = data || []
+    loaded.value.tools = true
   } finally {
     loading.value.tools = false
   }
 }
 
 const loadResources = async () => {
-  if (!props.mcpId) return
+  if (!props.mcpId || loaded.value.resources) return
 
   loading.value.resources = true
   try {
     const data = await mcpApi.listResources(props.mcpId)
     resources.value = data || []
+    loaded.value.resources = true
   } finally {
     loading.value.resources = false
   }
 }
 
 const loadPrompts = async () => {
-  if (!props.mcpId) return
+  if (!props.mcpId || loaded.value.prompts) return
 
   loading.value.prompts = true
   try {
     const data = await mcpApi.listPrompts(props.mcpId)
     prompts.value = data || []
+    loaded.value.prompts = true
   } finally {
     loading.value.prompts = false
   }
 }
 
-// 监听 mcpId 变化
-watch(() => props.mcpId, (newId) => {
-  if (newId && drawerVisible.value) {
-    loadMcpData()
-    loadTools()
-    loadResources()
-    loadPrompts()
+// 重置加载状态
+const resetLoadedState = () => {
+  loaded.value = {
+    tools: false,
+    resources: false,
+    prompts: false
   }
-}, { immediate: true })
+  tools.value = []
+  resources.value = []
+  prompts.value = []
+}
 
-// 监听对话框打开
+// 监听 mcpId 变化
+watch(() => props.mcpId, (newId, oldId) => {
+  // mcpId变化时重置加载状态
+  if (newId !== oldId) {
+    resetLoadedState()
+  }
+  // 仅加载基本信息
+  if (newId) {
+    loadMcpData()
+  }
+})
+
+// 监听对话框打开/关闭
 watch(() => props.visible, (visible) => {
-  if (visible && props.mcpId) {
+  if (visible) {
+    // 对话框打开时，加载基本信息和默认激活的标签页数据
     loadMcpData()
     loadTools()
-    loadResources()
-    loadPrompts()
+  } else {
+    // 对话框关闭时，重置加载状态
+    resetLoadedState()
+  }
+})
+
+// 监听标签页切换，延迟加载数据
+watch(activeTab, (tab) => {
+  if (!props.mcpId) return
+
+  switch (tab) {
+    case 'tools':
+      loadTools()
+      break
+    case 'resources':
+      loadResources()
+      break
+    case 'prompts':
+      loadPrompts()
+      break
   }
 })
 
@@ -281,6 +362,43 @@ const copyToClipboard = async (text) => {
     ElMessage.success('已复制到剪贴板')
   } catch (error) {
     ElMessage.error('复制失败')
+  }
+}
+
+// 打开测试工具弹框
+const openTestToolDialog = (tool) => {
+  currentTool.value = tool
+  testToolParams.value = ''
+  testToolResult.value = ''
+  testToolVisible.value = true
+}
+
+// 测试工具
+const testTool = async () => {
+  if (!testToolParams.value.trim()) {
+    ElMessage.warning('请输入参数')
+    return
+  }
+
+  // 验证JSON格式
+  try {
+    JSON.parse(testToolParams.value)
+  } catch (error) {
+    ElMessage.error('参数格式错误，请输入有效的JSON格式')
+    return
+  }
+
+  testToolLoading.value = true
+  testToolResult.value = ''
+  try {
+    const result = await mcpApi.testTool(props.mcpId, currentTool.value.name, JSON.parse(testToolParams.value))
+    testToolResult.value = JSON.stringify(result, null, 2)
+    ElMessage.success('工具执行成功')
+  } catch (error) {
+    testToolResult.value = `执行失败：${error.message || '未知错误'}`
+    ElMessage.error('工具执行失败')
+  } finally {
+    testToolLoading.value = false
   }
 }
 </script>
@@ -482,5 +600,42 @@ const copyToClipboard = async (text) => {
 
 :deep(.el-empty__description) {
   font-size: 0.875rem;
+}
+
+/* 测试工具弹框样式 */
+.param-hint {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  word-break: break-all;
+}
+
+.result-box {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.result-box pre {
+  margin: 0;
+  font-size: 0.75rem;
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-primary);
+}
+
+.result-placeholder {
+  padding: 0.75rem;
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
+  text-align: center;
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-sm);
 }
 </style>

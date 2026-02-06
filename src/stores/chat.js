@@ -369,7 +369,7 @@ export const useChatStore = defineStore('chat', () => {
   })
 
   // 发送消息
-  async function sendMessage({ modelId, message, toolIds }) {
+  async function sendMessage({ modelId, message, toolIds, files }) {
     if (!message.trim() || isLoading.value) return
 
     const actualModelId = modelId || selectedModelId.value
@@ -426,6 +426,7 @@ export const useChatStore = defineStore('chat', () => {
           sessionId,
           requestId,
           toolIds,
+          files,
         },
         handleSseMessage,
         addError,

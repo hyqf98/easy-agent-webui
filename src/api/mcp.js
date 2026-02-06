@@ -86,5 +86,16 @@ export const mcpApi = {
    */
   async listPrompts(id) {
     return request.get(`/mcp/${id}/prompts`)
+  },
+
+  /**
+   * 测试MCP工具
+   * @param {number} mcpId MCP配置ID
+   * @param {string} toolName 工具名称
+   * @param {Object} args 工具参数
+   * @returns {Promise<Object>}
+   */
+  async testTool(mcpId, toolName, args) {
+    return request.post('/mcp/tool/test', { mcpId, toolName, arguments: args })
   }
 }
