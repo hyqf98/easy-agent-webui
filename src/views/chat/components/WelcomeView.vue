@@ -2,7 +2,7 @@
   <div class="welcome-wrapper">
     <div class="welcome-content">
       <h1 class="welcome-title">Easy Agent</h1>
-      <p class="welcome-description">多智能体编排平台，让 AI 更好地为您服务</p>
+      <p class="welcome-description">智能生成 PPT、文档、网页等多种报告，提供专业问答服务</p>
       <slot />
     </div>
   </div>

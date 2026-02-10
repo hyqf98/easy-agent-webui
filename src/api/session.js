@@ -21,9 +21,10 @@ export const sessionApi = {
   /**
    * 新增会话
    * @param {number} modelId - 模型ID
+   * @param {string} chatMode - 聊天模式（可选，默认为 chat）
    */
-  async create(modelId) {
-    return request.post('/session', { modelId })
+  async create(modelId, chatMode = 'chat') {
+    return request.post('/session', { modelId, chatMode })
   },
 
   /**

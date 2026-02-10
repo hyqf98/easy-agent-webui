@@ -29,6 +29,17 @@ export const useChatStore = defineStore('chat', () => {
   const mcpLoading = ref(false)        // MCP 列表加载状态
   const mcpError = ref(null)           // MCP 加载错误信息
 
+  // 聊天模式相关状态
+  const chatMode = ref('chat')         // 当前选中的聊天模式，默认智能问答
+
+  // 聊天模式选项
+  const chatModeOptions = [
+    { value: 'chat', label: '智能问答', icon: '💬' },
+    { value: 'brainstorming', label: '头脑风暴', icon: '🧠' },
+    { value: 'ppt', label: 'PPT', icon: '📊' },
+    { value: 'html', label: '网页', icon: '🌐' }
+  ]
+
   // 计算属性
   const currentSession = computed(() => {
     return sessions.value.find(s => s.id === currentSessionId.value)
@@ -40,6 +51,13 @@ export const useChatStore = defineStore('chat', () => {
 
   // MCP 工具选择器相关计算属性
   const selectedToolsCount = computed(() => selectedToolIds.value.length)
+
+  // 判断是否可以修改聊天模式（当前会话没有消息时可以修改）
+  const canChangeChatMode = computed(() => {
+    const currentMsgs = sessionMessages.value
+    // 只要有消息就固定模式，新会话可以修改
+    return currentMsgs.length === 0
+  })
 
   // 初始化
   async function init() {
@@ -386,7 +404,7 @@ export const useChatStore = defineStore('chat', () => {
     // 如果当前会话是临时会话（未保存），先创建会话
     if (currentSessionObj && currentSessionObj._unsaved) {
       try {
-        await sessionApi.create(actualModelId)
+        await sessionApi.create(actualModelId, chatMode.value)
         // 重新加载会话列表
         await loadSessions()
         // 获取新创建的会话（应该是第一个）
@@ -548,6 +566,11 @@ export const useChatStore = defineStore('chat', () => {
     selectedToolIds.value = []
   }
 
+  // 设置聊天模式
+  function setChatMode(mode) {
+    chatMode.value = mode
+  }
+
   // isSending 别名（用于 InputArea 组件）
   const isSending = computed(() => {
     return isLoading.value
@@ -572,6 +595,10 @@ export const useChatStore = defineStore('chat', () => {
     mcpLoading,
     mcpError,
     selectedToolsCount,
+    // 聊天模式状态
+    chatMode,
+    chatModeOptions,
+    canChangeChatMode,
 
     // 方法
     init,
@@ -593,5 +620,7 @@ export const useChatStore = defineStore('chat', () => {
     loadMcpConfigs,
     toggleToolSelection,
     clearToolSelection,
+    // 聊天模式方法
+    setChatMode,
   }
 })

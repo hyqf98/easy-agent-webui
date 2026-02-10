@@ -180,6 +180,34 @@
             </div>
           </Transition>
         </div>
+
+        <!-- 聊天模式选择按钮 -->
+        <div v-if="canChangeChatMode" class="chat-mode-selector" v-click-outside="closeChatModeSelector">
+          <div
+            class="chat-mode-btn"
+            @mousedown.prevent
+            @click="toggleChatModeSelector"
+          >
+            <span class="mode-icon">{{ currentChatModeOption?.icon || '💬' }}</span>
+            <span>{{ currentChatModeOption?.label || '智能问答' }}</span>
+          </div>
+
+          <Transition name="mode-panel">
+            <div v-if="chatModeSelectorOpen" class="chat-mode-panel">
+              <div
+                v-for="mode in chatModeOptions"
+                :key="mode.value"
+                class="mode-item"
+                :class="{ active: chatMode === mode.value }"
+                @mousedown.prevent
+                @click="selectChatMode(mode.value)"
+              >
+                <span class="mode-icon">{{ mode.icon }}</span>
+                <span>{{ mode.label }}</span>
+              </div>
+            </div>
+          </Transition>
+        </div>
       </div>
 
       <!-- 输入框 -->
@@ -236,7 +264,7 @@
 </template>
 
 <script setup>
-import {computed, nextTick, ref, toRefs, watch} from 'vue'
+import {computed, nextTick, onUnmounted, ref, toRefs, watch} from 'vue'
 import {useChatStore} from '@/stores/chat'
 import {chatApi} from '@/api/chat'
 
@@ -251,6 +279,9 @@ const isFocused = ref(false)
 // 工具选择器相关状态
 const toolSelectorOpen = ref(false)
 
+// 聊天模式选择器相关状态
+const chatModeSelectorOpen = ref(false)
+
 // 文件上传相关状态
 const uploadedFiles = ref([])
 
@@ -258,19 +289,21 @@ const uploadedFiles = ref([])
 const hoveredFile = ref(null)
 const previewPosition = ref({ x: 0, y: 0 })
 
+// 文件类型映射配置
+const FILE_TYPE_MAP = {
+  image: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'],
+  pdf: ['pdf'],
+  word: ['doc', 'docx', 'txt', 'md'],
+  excel: ['xls', 'xlsx', 'csv'],
+  archive: ['zip', 'rar', '7z', 'tar', 'gz']
+}
+
 // 文件类型判断
 const getFileType = (fileName) => {
   const ext = fileName.split('.').pop()?.toLowerCase() || ''
-  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico']
-  const docExts = ['pdf', 'doc', 'docx', 'txt', 'md']
-  const excelExts = ['xls', 'xlsx', 'csv']
-  const archiveExts = ['zip', 'rar', '7z', 'tar', 'gz']
-
-  if (imageExts.includes(ext)) return 'image'
-  if (ext === 'pdf') return 'pdf'
-  if (docExts.includes(ext)) return 'word'
-  if (excelExts.includes(ext)) return 'excel'
-  if (archiveExts.includes(ext)) return 'archive'
+  for (const [type, extensions] of Object.entries(FILE_TYPE_MAP)) {
+    if (extensions.includes(ext)) return type
+  }
   return 'file'
 }
 
@@ -284,10 +317,15 @@ const formatFileSize = (bytes) => {
 }
 
 // 从 store 解构 MCP 相关状态（使用 toRefs 保持响应性）
-const { mcpConfigs, selectedToolIds, mcpLoading, mcpError, selectedToolsCount } = toRefs(chatStore)
+const { mcpConfigs, selectedToolIds, mcpLoading, mcpError, selectedToolsCount, chatMode, chatModeOptions, canChangeChatMode } = toRefs(chatStore)
 
 const canSend = computed(() => {
   return inputContent.value.trim().length > 0 && !isSending.value
+})
+
+// 当前选中的聊天模式选项
+const currentChatModeOption = computed(() => {
+  return chatModeOptions.value.find(m => m.value === chatMode.value)
 })
 
 // 处理输入 - 自动调整高度
@@ -554,6 +592,20 @@ const vClickOutside = {
   unmounted(el) {
     document.removeEventListener('click', el._clickOutside)
   }
+}
+
+// 聊天模式选择器相关方法
+const toggleChatModeSelector = () => {
+  chatModeSelectorOpen.value = !chatModeSelectorOpen.value
+}
+
+const closeChatModeSelector = () => {
+  chatModeSelectorOpen.value = false
+}
+
+const selectChatMode = (mode) => {
+  chatStore.setChatMode(mode)
+  chatModeSelectorOpen.value = false
 }
 
 // 取消发送
@@ -987,14 +1039,14 @@ watch(() => chatStore.isSending, (val) => {
 
 .tool-selector-panel {
   position: absolute;
-  top: 100%;
+  bottom: 100%;
   left: 0;
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: 0.75rem;
-  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   min-width: 16rem;
   max-width: 24rem;
   max-height: 18rem;
@@ -1011,7 +1063,7 @@ watch(() => chatStore.isSending, (val) => {
 .tool-panel-enter-from,
 .tool-panel-leave-to {
   opacity: 0;
-  transform: translateY(0.5rem);
+  transform: translateY(-0.5rem);
 }
 
 /* 加载中状态 */
@@ -1133,5 +1185,88 @@ watch(() => chatStore.isSending, (val) => {
   align-items: center;
   color: var(--text-tertiary);
   cursor: help;
+}
+
+/* ============ 聊天模式选择器样式 ============ */
+
+.chat-mode-selector {
+  position: relative;
+}
+
+.chat-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(124, 154, 109, 0.12);
+  border: 1px solid rgba(124, 154, 109, 0.35);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  width: fit-content;
+}
+
+.chat-mode-btn:hover {
+  background: rgba(124, 154, 109, 0.18);
+  border-color: rgba(124, 154, 109, 0.5);
+  color: var(--text-primary);
+}
+
+.chat-mode-btn .mode-icon {
+  font-size: 0.875rem;
+}
+
+.chat-mode-panel {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  min-width: 10rem;
+  z-index: 10;
+}
+
+.mode-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.mode-item:hover {
+  background: var(--bg-hover);
+}
+
+.mode-item.active {
+  background: rgba(124, 154, 109, 0.12);
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+.mode-item .mode-icon {
+  font-size: 1.125rem;
+}
+
+/* 模式面板过渡动画 */
+.mode-panel-enter-active,
+.mode-panel-leave-active {
+  transition: all 0.2s ease-out;
+}
+
+.mode-panel-enter-from,
+.mode-panel-leave-to {
+  opacity: 0;
+  transform: translateY(-0.5rem);
 }
 </style>

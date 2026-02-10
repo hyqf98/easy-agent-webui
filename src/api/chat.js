@@ -2,16 +2,16 @@
  * 聊天 API 接口
  */
 
+// 配置常量
+const MAX_SSE_MESSAGES = 1000  // SSE 消息最大收集数量
+const DEFAULT_TIMEOUT = 60000  // 默认请求超时时间（毫秒）
+
 // 获取 API 基础地址
 // 开发环境：留空走 Vite 代理，生产环境：使用完整地址
 const getBaseURL = () => {
-  const envBaseURL = import.meta.env.VITE_API_BASE_URL
-
-  // 如果环境变量为空或未定义，使用相对路径走代理
-  if (!envBaseURL || envBaseURL === '""' || envBaseURL === 'undefined') {
-    return '/api'
-  }
-  return envBaseURL
+  const envBaseURL = import.meta.env.VITE_API_BASE_URL?.trim()
+  // 如果环境变量为空或无效，使用相对路径走代理
+  return (envBaseURL && envBaseURL !== '""' && envBaseURL !== 'undefined') ? envBaseURL : '/api'
 }
 
 /**
@@ -20,14 +20,22 @@ const getBaseURL = () => {
  * @param {Function} onMessage - 消息回调
  * @param {Function} onError - 错误回调
  * @param {AbortSignal} signal - 中止信号
+ * @param {number} timeout - 超时时间（毫秒），默认 60000
  * @returns {Promise<void>}
  */
-export async function streamChat(data, onMessage, onError, signal) {
+export async function streamChat(data, onMessage, onError, signal, timeout = DEFAULT_TIMEOUT) {
   const baseURL = getBaseURL()
   const url = `${baseURL}/chat/stream`
 
-  // 收集完整的 SSE 消息
+  // 收集完整的 SSE 消息（限制数量防止内存泄漏）
   const sseMessages = []
+
+  // 创建超时控制器
+  const timeoutController = new AbortController()
+  const timeoutId = setTimeout(() => timeoutController.abort(), timeout)
+
+  // 组合中止信号
+  const combinedSignal = signal ? AbortSignal.any([signal, timeoutController.signal]) : timeoutController.signal
 
   try {
     const response = await fetch(url, {
@@ -36,7 +44,7 @@ export async function streamChat(data, onMessage, onError, signal) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-      signal,
+      signal: combinedSignal,
     })
 
     if (!response.ok) {
@@ -78,6 +86,10 @@ export async function streamChat(data, onMessage, onError, signal) {
           const eventData = line.slice(5).trim()
           try {
             const parsed = JSON.parse(eventData)
+            // 限制消息数量，防止内存泄漏
+            if (sseMessages.length >= MAX_SSE_MESSAGES) {
+              sseMessages.shift()  // 移除最旧的消息
+            }
             sseMessages.push(parsed)
             onMessage(parsed)
           } catch (e) {
@@ -87,12 +99,19 @@ export async function streamChat(data, onMessage, onError, signal) {
       }
     }
   } catch (error) {
-    console.error('[chat.js] 请求错误:', error)
     if (error.name === 'AbortError') {
+      // 判断是超时还是用户取消
+      if (timeoutController.signal.aborted) {
+        console.error('[chat.js] 请求超时')
+        onError(new Error('请求超时，请稍后重试'))
+      }
       // 用户取消请求，不打印日志
     } else {
+      console.error('[chat.js] 请求错误:', error)
       onError(error)
     }
+  } finally {
+    clearTimeout(timeoutId)
   }
 }
 
